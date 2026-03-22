@@ -20,9 +20,14 @@ export async function POST(request: NextRequest) {
     const parsed = RegisterSchema.safeParse(body);
 
     if (!parsed.success) {
-      console.log("[POST /api/auth/register] Zod Error:", parsed.error.flatten().fieldErrors);
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      // Build a human-readable message from all field errors
+      const messages = Object.entries(fieldErrors)
+        .flatMap(([, errs]) => errs ?? []);
+      const errorMessage = messages.join(". ") || "Validation failed";
+      console.log("[POST /api/auth/register] Zod Error:", fieldErrors);
       return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+        { error: errorMessage, details: fieldErrors },
         { status: 400 },
       );
     }
