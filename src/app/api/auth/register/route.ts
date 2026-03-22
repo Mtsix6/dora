@@ -4,6 +4,8 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 const RegisterSchema = z.object({
   email: z.string().email().transform((v) => v.toLowerCase().trim()),
   password: z.string().min(8, "Password must be at least 8 characters"),
