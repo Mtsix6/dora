@@ -1,0 +1,85 @@
+.cmd-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  padding-bottom: 15vh;
+}
+
+.cmd-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(10, 37, 64, 0.2);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.cmd-content {
+  position: relative;
+  z-index: 1001;
+  width: 100%;
+  max-width: 640px;
+  overflow: hidden;
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 25px 50px -12px rgba(10, 37, 64, 0.25), 0 0 0 1px rgba(10, 37, 64, 0.05);
+  padding: 12px;
+  animation: slideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cmd-list {
+  margin-top: 8px;
+  max-height: 380px;
+  overflow-y: auto;
+  width: 100%;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cmd-group [cmdk-group-heading] {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8f9bb3; /* muted-foreground approximation */
+}
+
+.cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.1s ease;
+  margin-bottom: 2px;
+}
+
+.cmd-item[aria-selected="true"],
+.cmd-item:hover {
+  background-color: #F6F9FC;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.96) translateY(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+}

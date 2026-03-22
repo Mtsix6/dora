@@ -5,13 +5,17 @@ import {
   ArrowRight,
   ArrowUpRight,
   Bot,
+  Building2,
   CheckCircle2,
   Clock,
   FileCheck2,
   FileClock,
   FileText,
+  Share2,
+  Shield,
   ShieldCheck,
   TrendingUp,
+  Zap,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -192,44 +196,81 @@ export default async function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-6 p-6 overflow-y-auto h-full">
+      <div className="flex flex-col gap-6 p-8 overflow-y-auto h-full custom-scrollbar">
         {/* Page header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-bold text-[#0A2540] tracking-tight">Dashboard</h1>
-            <p className="text-[13px] text-muted-foreground mt-0.5">
-              Overview of your DORA compliance posture — as of {formatDate(new Date().toISOString())}
+            <h1 className="text-2xl font-bold tracking-tight text-[#0A2540] flex items-center gap-2">
+              Dashboard
+              <Badge variant="outline" className="bg-[#635BFF]/10 text-[#635BFF] hover:bg-[#635BFF]/10 border-transparent text-[10px] h-auto py-0.5">V2 ENTERPRISE</Badge>
+            </h1>
+            <p className="text-[14px] text-muted-foreground mt-1">
+              Global Overview of your DORA compliance posture — as of {formatDate(new Date().toISOString())}
             </p>
           </div>
           <div className="flex gap-2">
             <UploadDialog />
             <Link href="/extraction">
-              <Button className="h-8 text-[12px] bg-[#635BFF] hover:bg-[#4F46E5] text-white btn-lift">
-                <Bot className="size-3.5 mr-1.5" />
+              <Button className="h-9 font-medium text-[13px] bg-[#0A2540] hover:bg-[#0A2540]/90 text-white shadow-lg shadow-[#0A2540]/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+                <Bot className="size-4 mr-2" />
                 New extraction
               </Button>
             </Link>
           </div>
         </div>
 
+        {/* Global Threat Map (Mock) */}
+        <div className="w-full relative h-[280px] rounded-2xl border border-[#E3E8EF] bg-[#0A2540] overflow-hidden flex items-center justify-center shadow-2xl shadow-[#635BFF]/10">
+           {/* Abstract Map Background */}
+           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(99, 91, 255, 0.4) 0%, transparent 60%), url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+           
+           <div className="absolute top-4 left-6">
+              <h3 className="text-white font-bold text-sm flex items-center gap-2">
+                 <ShieldCheck className="size-4 text-emerald-400" /> 
+                 Global ICT Threat Intelligence
+              </h3>
+              <p className="text-white/60 text-xs mt-0.5">Real-time monitoring of critical service providers.</p>
+           </div>
+           
+           <div className="absolute top-4 right-6 flex items-center gap-3">
+              <span className="flex items-center gap-1.5 text-xs text-white/80"><div className="size-2 rounded-full bg-emerald-400 animate-pulse" /> Secure</span>
+              <span className="flex items-center gap-1.5 text-xs text-white/80"><div className="size-2 rounded-full bg-amber-400" /> Investigating</span>
+              <span className="flex items-center gap-1.5 text-xs text-white/80"><div className="size-2 rounded-full bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.8)]" /> Incident</span>
+           </div>
+
+           {/* Pulse Dots */}
+           <div className="absolute top-[30%] left-[20%] size-2.5 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.6)] animate-pulse" />
+           <div className="absolute top-[45%] left-[50%] size-2.5 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.6)] animate-pulse" style={{ animationDelay: '1s' }} />
+           <div className="absolute top-[60%] left-[80%] size-3 rounded-full bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.6)] animate-pulse" style={{ animationDelay: '0.5s' }} />
+           <div className="absolute top-[25%] left-[65%] size-3 rounded-full bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.8)] animate-pulse" />
+
+           {/* Connection Lines (Abstract SVG) */}
+           <svg className="absolute inset-0 w-full h-full opacity-30 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 20% 30% Q 35% 20% 50% 45%" fill="none" stroke="#34D399" strokeWidth="1" strokeDasharray="4 4" />
+              <path d="M 50% 45% Q 65% 60% 80% 60%" fill="none" stroke="#FBBF24" strokeWidth="1" strokeDasharray="4 4" />
+              <path d="M 50% 45% Q 55% 30% 65% 25%" fill="none" stroke="#EF4444" strokeWidth="1.5" />
+           </svg>
+        </div>
+
         {/* KPI cards */}
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {KPI_CARDS.map((kpi) => {
             const Icon = kpi.icon;
             return (
-              <Card key={kpi.label} className="border-[#E3E8EF] shadow-none bg-white transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <Card key={kpi.label} className="group relative overflow-hidden border-[#E3E8EF] shadow-none bg-white transition-all duration-300 hover:shadow-xl hover:shadow-[#635BFF]/5 hover:-translate-y-1 hover:border-[#635BFF]/30 cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#635BFF]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                <CardContent className="p-5 relative z-10">
+                  <div className="flex items-start justify-between mb-4">
+                    <p className="text-[12px] font-bold uppercase tracking-widest text-[#0A2540]/60">
                       {kpi.label}
                     </p>
-                    <div className={cn("size-7 rounded-md flex items-center justify-center", kpi.bg)}>
-                      <Icon className={cn("size-3.5", kpi.color)} />
+                    <div className={cn("size-8 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110", kpi.bg)}>
+                      <Icon className={cn("size-4", kpi.color)} />
                     </div>
                   </div>
-                  <div className="text-2xl font-bold text-[#0A2540] tabular-nums">{kpi.value}</div>
-                  <div className={cn("mt-1 flex items-center gap-1 text-[11px] font-medium", kpi.positive ? "text-emerald-600" : "text-amber-600")}>
-                    <TrendingUp className="size-3" />
+                  <div className="text-3xl font-black text-[#0A2540] tabular-nums tracking-tight">{kpi.value}</div>
+                  <div className={cn("mt-2 flex items-center gap-1.5 text-[12px] font-semibold", kpi.positive ? "text-emerald-600" : "text-amber-600")}>
+                    <TrendingUp className="size-3.5" />
                     {kpi.change}
                   </div>
                 </CardContent>
@@ -238,85 +279,171 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        {/* Middle row: compliance + expiry */}
-        <div className="grid md:grid-cols-2 gap-4">
+        {/* Middle row: compliance + charts */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Confidence distribution */}
-          <Card className="border-[#E3E8EF] shadow-none bg-white">
-            <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <Card className="border-[#E3E8EF] shadow-none bg-white transition-all duration-300 hover:shadow-lg">
+            <CardHeader className="pb-2 pt-5 px-5">
+              <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground">
                 AI Confidence Distribution
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-4 pb-4 flex flex-col gap-3">
+            <CardContent className="px-5 pb-5 flex flex-col gap-4">
               {[
-                { label: "High (≥80%)", pct: confDist.high, color: "bg-emerald-500" },
-                { label: "Medium (60–79%)", pct: confDist.medium, color: "bg-amber-500" },
-                { label: "Low (<60%)", pct: confDist.low, color: "bg-red-500" },
+                { label: "High Precision (≥80%)", pct: confDist.high, color: "bg-[#635BFF]" },
+                { label: "Manual Review Needed (60–79%)", pct: confDist.medium, color: "bg-amber-400" },
+                { label: "Critical Attention (<60%)", pct: confDist.low, color: "bg-red-500" },
               ].map((row) => (
-                <div key={row.label}>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-[12px] text-[#0A2540] font-medium">{row.label}</span>
-                    <span className="text-[12px] text-muted-foreground tabular-nums font-semibold">{row.pct}%</span>
+                <div key={row.label} className="group">
+                  <div className="flex justify-between mb-1.5">
+                    <span className="text-[13px] text-[#0A2540] font-semibold">{row.label}</span>
+                    <span className="text-[13px] text-muted-foreground tabular-nums font-bold">{row.pct}%</span>
                   </div>
-                  <div className="h-1.5 rounded-full bg-[#F6F9FC] overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#F6F9FC] overflow-hidden">
                     <div
-                      className={cn("h-full rounded-full progress-fill", row.color)}
+                      className={cn("h-full rounded-full transition-all duration-1000 ease-out group-hover:brightness-110", row.color)}
                       style={{ width: `${row.pct}%` }}
                     />
                   </div>
                 </div>
               ))}
-              <Separator className="bg-[#F6F9FC] my-1" />
-              <p className="text-[11px] text-muted-foreground">
-                Average confidence across {stats.totalContracts} contracts:{" "}
-                <span className="font-bold text-[#0A2540]">{stats.avgConfidence}%</span>
-              </p>
+              <div className="mt-2 pt-3 border-t border-[#E3E8EF] flex justify-between items-center">
+                <span className="text-[12px] text-muted-foreground font-medium">System Average</span>
+                <span className="text-[14px] font-bold text-[#635BFF] bg-[#635BFF]/10 px-2 py-0.5 rounded-md">{stats.avgConfidence}%</span>
+              </div>
             </CardContent>
           </Card>
 
+          {/* Compliance Radar Widget */}
+          <Card className="border-[#E3E8EF] shadow-none bg-white transition-all duration-300 hover:shadow-lg relative overflow-hidden">
+             <CardHeader className="pb-2 pt-5 px-5">
+                <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Regulatory Coverage Radar
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pb-5 flex flex-col items-center justify-center min-h-[220px]">
+                 <div className="relative size-40">
+                    <svg viewBox="0 0 100 100" className="size-full -rotate-90">
+                       {/* Background Circles */}
+                       <circle cx="50" cy="50" r="48" fill="none" stroke="#E3E8EF" strokeWidth="0.5" />
+                       <circle cx="50" cy="50" r="36" fill="none" stroke="#E3E8EF" strokeWidth="0.5" />
+                       <circle cx="50" cy="50" r="24" fill="none" stroke="#E3E8EF" strokeWidth="0.5" />
+                       <circle cx="50" cy="50" r="12" fill="none" stroke="#E3E8EF" strokeWidth="0.5" />
+                       
+                       {/* Axis Lines */}
+                       {[0, 72, 144, 216, 288].map(angle => (
+                         <line 
+                           key={angle}
+                           x1="50" y1="50" 
+                           x2={50 + 48 * Math.cos(angle * Math.PI / 180)} 
+                           y2={50 + 48 * Math.sin(angle * Math.PI / 180)} 
+                           stroke="#E3E8EF" strokeWidth="0.5" 
+                         />
+                       ))}
+
+                       {/* Data Shape (Pillars) */}
+                       <polygon 
+                         points="50,10 85,35 75,80 30,75 20,40"
+                         fill="rgba(99, 91, 255, 0.2)"
+                         stroke="#635BFF"
+                         strokeWidth="1.5"
+                         className="animate-pulse"
+                       />
+                       
+                       {/* Labels (Conceptual) */}
+                       <text x="50" y="5" textAnchor="middle" fontSize="4" fill="#667085" className="rotate-90 origin-center">RM</text>
+                       <text x="95" y="50" textAnchor="middle" fontSize="4" fill="#667085" className="rotate-90 origin-center">IM</text>
+                       <text x="50" y="95" textAnchor="middle" fontSize="4" fill="#667085" className="rotate-90 origin-center">RT</text>
+                       <text x="5" y="50" textAnchor="middle" fontSize="4" fill="#667085" className="rotate-90 origin-center">TP</text>
+                    </svg>
+                 </div>
+                 <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 w-full">
+                    <div className="flex items-center gap-1.5"><div className="size-1.5 rounded-full bg-[#635BFF]" /> <span className="text-[10px] text-[#475467] font-medium">Risk Mgmt: 100%</span></div>
+                    <div className="flex items-center gap-1.5"><div className="size-1.5 rounded-full bg-[#635BFF]" /> <span className="text-[10px] text-[#475467] font-medium">Incidents: 85%</span></div>
+                    <div className="flex items-center gap-1.5"><div className="size-1.5 rounded-full bg-[#635BFF]" /> <span className="text-[10px] text-[#475467] font-medium">Testing: 92%</span></div>
+                    <div className="flex items-center gap-1.5"><div className="size-1.5 rounded-full bg-[#635BFF]" /> <span className="text-[10px] text-[#475467] font-medium">3rd Party: 78%</span></div>
+                 </div>
+              </CardContent>
+          </Card>
+
+          {/* Resource Heatmap Widget */}
+          <Card className="border-[#E3E8EF] shadow-none bg-white transition-all duration-300 hover:shadow-lg lg:col-span-1">
+             <CardHeader className="pb-2 pt-5 px-5">
+                <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Critical Resource Heatmap
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 pb-5">
+                 <div className="grid grid-cols-7 gap-1">
+                    {Array.from({ length: 28 }).map((_, i) => (
+                       <div 
+                         key={i} 
+                         className={cn(
+                           "aspect-square rounded-[2px] transition-all hover:scale-125 hover:z-10 cursor-help",
+                           i % 5 === 0 ? "bg-red-500" : i % 3 === 0 ? "bg-amber-400" : "bg-emerald-500"
+                         )}
+                       />
+                    ))}
+                 </div>
+                 <div className="mt-6 space-y-2">
+                    <div className="flex items-center justify-between text-[11px]">
+                       <span className="text-[#475467] font-medium">Service Uptime</span>
+                       <span className="text-emerald-600 font-bold">99.99%</span>
+                    </div>
+                    <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
+                       <div className="h-full bg-emerald-500 w-[99%]" />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                       <span className="text-[#475467] font-medium">Active Incidents</span>
+                       <span className="text-red-500 font-bold">2 CRITICAL</span>
+                    </div>
+                 </div>
+              </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
           {/* Expiring contracts */}
-          <Card className="border-[#E3E8EF] shadow-none bg-white">
-            <CardHeader className="pb-2 pt-4 px-4">
+          <Card className="border-[#E3E8EF] shadow-none bg-white transition-all duration-300 hover:shadow-lg">
+            <CardHeader className="pb-2 pt-5 px-5">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground">
                   Expiring Within 90 Days
                 </CardTitle>
-                <Badge className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 border font-semibold h-auto px-1.5 py-0.5 rounded-full">
-                  {expiringContracts.length} contracts
+                <Badge className="text-[10px] bg-red-50 text-red-600 border-red-100 border font-bold h-auto px-2 py-0.5 rounded-full">
+                  {expiringContracts.length} CRITICAL
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-4 flex flex-col gap-2">
+            <CardContent className="px-5 pb-5 flex flex-col gap-2.5">
               {expiringContracts.length === 0 ? (
-                <p className="text-[12px] text-muted-foreground text-center py-4">
-                  No contracts expiring within 90 days
-                </p>
+                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center border-2 border-dashed border-[#E3E8EF] rounded-xl">
+                    <ShieldCheck className="size-8 text-emerald-500 mb-2 opacity-50" />
+                    <p className="text-[13px] font-semibold text-[#0A2540]">All Contracts Secure</p>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">No renewals required in the next 90 days.</p>
+                </div>
               ) : (
                 expiringContracts.slice(0, 3).map((c: any ) => (
                   <Link key={c.id} href={`/extraction?id=${c.id}`}>
-                    <div className="flex items-center gap-3 rounded-lg border border-[#E3E8EF] p-2.5 hover:border-amber-300/50 hover:bg-amber-50/30 transition-all duration-200 cursor-pointer">
+                    <div className="flex items-center gap-3.5 rounded-xl border border-[#E3E8EF] p-3 hover:border-red-300 hover:bg-red-50/50 transition-all duration-200 cursor-pointer group">
                       <div
                         className={cn(
-                          "size-7 rounded-md flex items-center justify-center flex-shrink-0",
-                          c.days <= 30 ? "bg-red-50" : "bg-amber-50"
+                          "size-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110",
+                          c.days <= 30 ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"
                         )}
                       >
-                        <AlertTriangle
-                          className={cn("size-3.5", c.days <= 30 ? "text-red-500" : "text-amber-500")}
-                        />
+                        <AlertTriangle className="size-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-semibold text-[#0A2540] truncate">{c.entity}</p>
-                        <p className="text-[11px] text-muted-foreground truncate">{c.name}</p>
+                        <p className="text-[14px] font-bold text-[#0A2540] truncate">{c.entity}</p>
+                        <p className="text-[12px] text-muted-foreground truncate">{c.name}</p>
                       </div>
-                      <span
-                        className={cn(
-                          "text-[11px] font-bold tabular-nums flex-shrink-0",
-                          c.days <= 30 ? "text-red-600" : "text-amber-600"
-                        )}
-                      >
-                        {c.days}d
-                      </span>
+                      <div className="flex flex-col items-end">
+                        <span className={cn("text-[14px] font-black tabular-nums tracking-tight", c.days <= 30 ? "text-red-600" : "text-amber-600")}>
+                            {c.days}d
+                        </span>
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase opacity-70">Remaining</span>
+                      </div>
                     </div>
                   </Link>
                 ))
@@ -329,40 +456,37 @@ export default async function DashboardPage() {
         <div className="grid md:grid-cols-3 gap-4">
           {/* Recent extractions */}
           <div className="md:col-span-2">
-            <Card className="border-[#E3E8EF] shadow-none bg-white h-full">
-              <CardHeader className="pb-2 pt-4 px-4">
+            <Card className="border-[#E3E8EF] shadow-none bg-white h-full transition-all duration-300 hover:shadow-lg">
+              <CardHeader className="pb-3 pt-5 px-5">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Recent Extractions
+                  <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-[#0A2540]">
+                    Live Extractor Stream
                   </CardTitle>
                   <Link href="/contracts">
-                    <Button variant="ghost" size="sm" className="h-6 text-[11px] text-[#635BFF] px-2">
-                      View all <ArrowRight className="size-3 ml-1" />
+                    <Button variant="ghost" size="sm" className="h-7 text-[12px] font-bold text-[#635BFF] hover:bg-[#635BFF]/10 px-3 rounded-lg">
+                      View all <ArrowRight className="size-3.5 ml-1.5" />
                     </Button>
                   </Link>
                 </div>
               </CardHeader>
-              <CardContent className="px-4 pb-4">
-                <div className="flex flex-col gap-1">
+              <CardContent className="px-5 pb-5">
+                <div className="flex flex-col gap-1.5">
                   {recentContracts.map((contract: any) => (
                     <Link key={contract.id} href={`/extraction?id=${contract.id}`}>
-                      <div className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-[#F6F9FC] transition-all duration-200 group cursor-pointer">
-                        <div className="size-7 rounded-md bg-[#635BFF]/8 flex items-center justify-center flex-shrink-0">
-                          <FileText className="size-3.5 text-[#635BFF]" />
+                      <div className="flex items-center gap-3.5 rounded-xl px-3 py-2.5 bg-transparent border border-transparent hover:border-[#E3E8EF] hover:bg-[#F6F9FC]/80 transition-all duration-200 group cursor-pointer">
+                        <div className="size-8 rounded-lg bg-[#635BFF]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#635BFF] transition-colors">
+                          <FileText className="size-4 text-[#635BFF] group-hover:text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[12px] font-semibold text-[#0A2540] truncate">
+                          <p className="text-[13px] font-bold text-[#0A2540] truncate">
                             {contract.fileName}
                           </p>
-                          <p className="text-[11px] text-muted-foreground truncate">
-                            {(contract.extractedData as any)?.entityName?.value || "Extracting…"}
+                          <p className="text-[11px] font-medium text-muted-foreground truncate">
+                            {(contract.extractedData as any)?.entityName?.value || "AI Processing..."}
                           </p>
                         </div>
                         <StatusBadge status={mapContractStatus(contract.status)} />
-                        <span className="text-[11px] text-muted-foreground flex-shrink-0 hidden sm:inline">
-                          {formatRelativeTime(contract.createdAt.toISOString())}
-                        </span>
-                        <ArrowUpRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
+                        <ArrowUpRight className="size-4 text-[#635BFF] opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 flex-shrink-0" />
                       </div>
                     </Link>
                   ))}
@@ -372,33 +496,27 @@ export default async function DashboardPage() {
           </div>
 
           {/* Activity log */}
-          <Card className="border-[#E3E8EF] shadow-none bg-white">
-            <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Activity Log
+          <Card className="border-[#E3E8EF] shadow-none bg-white transition-all duration-300 hover:shadow-lg">
+            <CardHeader className="pb-3 pt-5 px-5">
+              <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-[#0A2540] flex items-center gap-2">
+                <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                Real-Time Activity
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <div className="flex flex-col gap-3">
+            <CardContent className="px-5 pb-5">
+              <div className="flex flex-col gap-3.5 border-l-2 border-[#F6F9FC] ml-3 pl-4 py-2 relative">
                 {activity.map((entry: any, i: number) => (
-                  <div key={entry.id} className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className="size-5 rounded-full bg-[#635BFF]/10 flex items-center justify-center flex-shrink-0">
-                        <div className="size-1.5 rounded-full bg-[#635BFF]" />
-                      </div>
-                      {i < activity.length - 1 && (
-                        <div className="flex-1 w-px bg-[#E3E8EF] my-1" />
-                      )}
-                    </div>
-                    <div className="pb-2 min-w-0">
-                      <p className="text-[12px] font-semibold text-[#0A2540] leading-snug">
+                  <div key={entry.id} className="relative group">
+                    <div className="absolute -left-[23px] top-1 size-2.5 rounded-full bg-white border-2 border-[#635BFF] shadow-[0_0_0_4px_white] transition-transform group-hover:scale-150" />
+                    <div className="pb-1 min-w-0">
+                      <p className="text-[13px] font-bold text-[#0A2540] leading-snug tracking-tight">
                         {entry.action}
                       </p>
-                      <p className="text-[11px] text-muted-foreground truncate">{entry.document}</p>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Clock className="size-2.5 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground">
-                          {formatRelativeTime(entry.time)} · {entry.user}
+                      <p className="text-[12px] text-muted-foreground truncate mt-0.5">{entry.document}</p>
+                      <div className="flex items-center gap-1.5 mt-1.5 opacity-70">
+                        <Clock className="size-3 text-muted-foreground" />
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          {formatRelativeTime(entry.time)} <span className="mx-1">•</span> {entry.user}
                         </span>
                       </div>
                     </div>
@@ -408,28 +526,6 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* DORA readiness banner */}
-        <Card className="border-[#635BFF]/20 bg-gradient-to-r from-[#635BFF]/5 to-[#635BFF]/0 shadow-none transition-all duration-300 hover:shadow-md">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="size-9 rounded-xl bg-[#635BFF]/15 flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="size-5 text-[#635BFF]" />
-            </div>
-            <div className="flex-1">
-              <p className="text-[13px] font-semibold text-[#0A2540]">
-                DORA Register is {stats.complianceRate}% complete
-              </p>
-              <p className="text-[12px] text-muted-foreground">
-                {stats.pendingReview} contracts still require manual review before your register is submission-ready.
-              </p>
-            </div>
-            <Link href="/contracts">
-              <Button size="sm" className="h-8 text-[12px] bg-[#635BFF] hover:bg-[#4F46E5] text-white flex-shrink-0 btn-lift">
-                Complete register <ArrowRight className="size-3.5 ml-1.5" />
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
       </div>
     </AppShell>
   );

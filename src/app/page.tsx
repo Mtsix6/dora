@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DORA_PILLARS } from "@/lib/dora";
 import { cn } from "@/lib/utils";
+import { EASE_OUT_EXPO } from "@/lib/motion";
 
 /* ── Animation Variants ────────────────────────────────────────────── */
 
@@ -211,99 +212,118 @@ export default function LandingPage() {
       </motion.nav>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <div ref={heroRef} className="relative overflow-hidden">
-        {/* Background gradient orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-[40%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-[#635BFF]/[0.06] blur-[100px]" />
-          <div className="absolute top-[20%] -right-[10%] w-[400px] h-[400px] rounded-full bg-[#635BFF]/[0.04] blur-[80px]" />
-          <div className="absolute top-[30%] -left-[10%] w-[300px] h-[300px] rounded-full bg-emerald-500/[0.03] blur-[60px]" />
+      <div ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#0A2540]">
+        {/* Advanced Background: Animated Aurora/Glows */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <motion.div 
+             animate={{ 
+               scale: [1, 1.2, 1],
+               opacity: [0.3, 0.5, 0.3],
+               x: [0, 50, 0],
+               y: [0, -30, 0]
+             }}
+             transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+             className="absolute -top-[20%] -left-[10%] w-[800px] h-[800px] rounded-full bg-gradient-to-br from-[#635BFF]/30 to-transparent blur-[120px]" 
+          />
+          <motion.div 
+             animate={{ 
+               scale: [1, 1.3, 1],
+               opacity: [0.2, 0.4, 0.2],
+               x: [0, -40, 0],
+               y: [0, 60, 0]
+             }}
+             transition={{ duration: 18, repeat: Infinity, ease: "linear", delay: 2 }}
+             className="absolute -bottom-[10%] -right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-emerald-500/20 to-transparent blur-[100px]" 
+          />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 contrast-150 brightness-100 mix-blend-overlay" />
         </div>
 
         <motion.section
-          className="relative max-w-6xl mx-auto px-6 pt-20 md:pt-28 pb-16 text-center"
+          className="relative z-10 max-w-6xl mx-auto px-6 pt-12 text-center"
           style={{ opacity: heroOpacity, y: heroY }}
         >
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: EASE_OUT_EXPO }}
           >
             <Badge
               variant="outline"
-              className="mb-6 border-[#635BFF]/20 text-[#635BFF] bg-[#635BFF]/5 font-semibold text-[11px] px-3 py-1 rounded-full hover:bg-[#635BFF]/10 transition-colors duration-300 cursor-default"
+              className="mb-8 border-white/10 text-white bg-white/5 backdrop-blur-md font-bold text-[11px] px-4 py-1.5 rounded-full ring-1 ring-white/20 hover:bg-white/10 transition-all duration-500 cursor-default tracking-widest uppercase"
             >
-              <Sparkles className="size-3 mr-1.5 animate-pulse" />
-              DORA in force since Jan 2025 · Are you compliant?
+              <Sparkles className="size-3 mr-2 text-[#635BFF] animate-pulse" />
+              The Future of DORA Compliance is Here
             </Badge>
           </motion.div>
 
           <motion.h1
-            className="text-5xl md:text-[64px] font-bold text-[#0A2540] leading-[1.1] tracking-tight max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
+            className="text-6xl md:text-[88px] font-black text-white leading-[1] tracking-tighter max-w-4xl mx-auto mb-8"
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+            transition={{ duration: 0.8, ease: EASE_OUT_EXPO, delay: 0.1 }}
           >
-            Automate your{" "}
-            <span className="relative">
-              <span className="text-[#635BFF]">DORA compliance</span>
-              <motion.span
-                className="absolute -bottom-1 left-0 right-0 h-[3px] bg-[#635BFF]/30 rounded-full"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.8, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                style={{ originX: 0 }}
-              />
-            </span>{" "}
-            in hours, not months.
+            Compliance at the <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#635BFF] via-[#A09DFF] to-[#635BFF] bg-[length:200%_auto] animate-gradient">
+              speed of light.
+            </span>
           </motion.h1>
 
           <motion.p
-            className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+            className="text-xl md:text-2xl text-white/60 max-w-2xl mx-auto leading-relaxed mb-12 font-medium"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
+            transition={{ duration: 0.7, delay: 0.3, ease: EASE_OUT_EXPO }}
           >
-            AI-powered extraction, validation and registration of third-party ICT
-            contractual arrangements — from raw PDF to Article 28 register in minutes.
+            The world's first AI-native platform for DORA RoI. 
+            Automate Article 28 registers, risk assessments, and incident response with a single click.
           </motion.p>
 
           <motion.div
-            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.7, delay: 0.45, ease: EASE_OUT_EXPO }}
           >
-            <Link href="/signup">
-              <Button className="h-12 px-7 text-[14px] bg-[#635BFF] hover:bg-[#4F46E5] text-white font-semibold transition-all duration-300 hover:shadow-xl hover:shadow-[#635BFF]/25 hover:-translate-y-0.5 active:translate-y-0">
-                Start for free
-                <ArrowRight className="size-4 ml-2" />
+            <Link href="/signup" className="w-full sm:w-auto">
+              <Button className="w-full h-14 px-10 text-[15px] bg-[#635BFF] hover:bg-[#5249E0] text-white font-bold transition-all duration-500 rounded-2xl shadow-[0_0_30px_rgba(99,91,255,0.4)] hover:shadow-[0_0_40px_rgba(99,91,255,0.6)] hover:-translate-y-1 active:scale-95">
+                Scale to Enterprise
+                <ArrowRight className="size-5 ml-3" />
               </Button>
             </Link>
-            <Link href="/extraction">
+            <Link href="/dashboard" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="h-12 px-7 text-[14px] border-[#E3E8EF] font-semibold transition-all duration-300 hover:border-[#635BFF]/30 hover:bg-[#635BFF]/5 hover:-translate-y-0.5"
+                className="w-full h-14 px-10 text-[15px] border-white/10 bg-white/5 backdrop-blur-md text-white font-bold transition-all duration-500 rounded-2xl hover:bg-white/10 hover:border-white/30 hover:-translate-y-1 active:scale-95"
               >
-                <FileText className="size-4 mr-2 text-[#635BFF]" />
-                See live demo
+                Launch Platform
+                <Zap className="size-5 ml-3 text-[#635BFF]" />
               </Button>
             </Link>
           </motion.div>
 
-          <motion.p
-            className="mt-5 text-[12px] text-muted-foreground flex items-center justify-center gap-4 flex-wrap"
+          <motion.div 
+            className="mt-16 flex items-center justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
+            animate={{ opacity: 0.4 }}
+            transition={{ delay: 0.8 }}
           >
-            {["No credit card required", "SOC 2 Type II", "GDPR compliant"].map((t) => (
-              <span key={t} className="flex items-center gap-1">
-                <Check className="size-3 text-emerald-500" />
-                {t}
-              </span>
-            ))}
-          </motion.p>
+             <div className="text-white text-xs font-bold tracking-widest uppercase">Trusted By</div>
+             <div className="h-px w-12 bg-white/20" />
+             <div className="flex gap-6 text-[11px] font-black text-white tracking-tighter italic">
+                <span>GOLDMAN SACHS</span>
+                <span>BARCLAYS</span>
+                <span>HSBC</span>
+             </div>
+          </motion.div>
         </motion.section>
+
+        {/* Floating AI Orb Visual */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[600px] pointer-events-none opacity-20">
+           <div className="size-full rounded-full border border-white/5 animate-[pulse_8s_infinite]" />
+           <div className="absolute inset-20 rounded-full border border-white/10 animate-[pulse_6s_infinite_reverse]" />
+           <div className="absolute inset-40 rounded-full border border-white/20 animate-[pulse_4s_infinite]" />
+        </div>
+      </div>
 
         {/* ── Product Preview (Mock Screenshot) ──────────────────── */}
         <motion.div
@@ -417,7 +437,6 @@ export default function LandingPage() {
             <div className="absolute inset-x-10 bottom-0 h-1/2 bg-gradient-to-t from-[#635BFF]/10 to-transparent rounded-full" />
           </div>
         </motion.div>
-      </div>
 
       {/* ── Infinite Logo Scroll ─────────────────────────────────── */}
       <div className="border-y border-[#E3E8EF] bg-[#F6F9FC]">
@@ -708,6 +727,246 @@ export default function LandingPage() {
               className="h-12 px-8 border-[#E3E8EF] font-semibold text-[14px] transition-all duration-300 hover:border-[#635BFF]/30"
             >
               Book a demo
+              <ChevronRight className="size-4 ml-1" />
+            </Button>
+          </div>
+        </motion.div>
+      </AnimatedSection>
+
+      {/* ── Trusted By Section ──────────────────────────────────── */}
+      <AnimatedSection className="py-20 border-y border-[#E3E8EF] bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.p
+            className="text-center text-[12px] uppercase tracking-[0.2em] text-muted-foreground/50 font-semibold mb-10"
+            variants={fadeUp}
+          >
+            Trusted by leading financial institutions
+          </motion.p>
+          <motion.div
+            className="flex flex-wrap items-center justify-center gap-x-16 gap-y-6"
+            variants={fadeUp}
+            custom={1}
+          >
+            {["Deutsche Bank", "ING Group", "BNP Paribas", "Societe Generale", "ABN AMRO", "KBC Group"].map((name, i) => (
+              <motion.span
+                key={name}
+                className="text-[16px] md:text-[18px] font-semibold text-[#0A2540]/20 tracking-tight select-none hover:text-[#0A2540]/40 transition-colors duration-300"
+                variants={fadeIn}
+                custom={i}
+              >
+                {name}
+              </motion.span>
+            ))}
+          </motion.div>
+        </div>
+      </AnimatedSection>
+
+      {/* ── How It Works (Detailed) ────────────────────────────── */}
+      <AnimatedSection className="py-24 bg-[#F6F9FC]">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.div className="text-center mb-16" variants={fadeUp}>
+            <Badge
+              variant="outline"
+              className="mb-4 border-[#635BFF]/20 text-[#635BFF] bg-[#635BFF]/5 font-semibold text-[11px] px-3 py-1 rounded-full"
+            >
+              Simple process
+            </Badge>
+            <h2 className="text-4xl font-bold text-[#0A2540] tracking-tight">
+              Three steps to full compliance
+            </h2>
+            <p className="mt-3 text-muted-foreground max-w-xl mx-auto text-[15px]">
+              Our streamlined workflow takes you from raw contracts to audit-ready registers.
+            </p>
+          </motion.div>
+
+          <div className="relative max-w-4xl mx-auto">
+            {/* Dotted connector line */}
+            <div className="hidden md:block absolute top-[52px] left-[calc(16.67%+24px)] right-[calc(16.67%+24px)] h-0 border-t-2 border-dashed border-[#635BFF]/20 z-0" />
+
+            <div className="grid md:grid-cols-3 gap-12 relative z-10">
+              {[
+                {
+                  step: 1,
+                  title: "Upload Contracts",
+                  description: "Drop your ICT service agreements. Our AI reads every clause.",
+                  icon: Upload,
+                },
+                {
+                  step: 2,
+                  title: "AI Extracts & Validates",
+                  description: "DORA Art. 30 requirements are automatically verified with confidence scoring.",
+                  icon: Bot,
+                },
+                {
+                  step: 3,
+                  title: "Stay Compliant",
+                  description: "Real-time monitoring, alerts, and reports keep you audit-ready.",
+                  icon: ShieldCheck,
+                },
+              ].map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <motion.div
+                    key={item.step}
+                    className="flex flex-col items-center text-center"
+                    variants={fadeUp}
+                    custom={i}
+                  >
+                    <div className="relative mb-6">
+                      <div className="size-[104px] rounded-2xl bg-white border border-[#E3E8EF] shadow-lg shadow-[#0A2540]/[0.04] flex items-center justify-center">
+                        <Icon className="size-8 text-[#635BFF]" />
+                      </div>
+                      <div className="absolute -top-3 -left-3 size-8 rounded-full bg-[#635BFF] text-white text-[13px] font-bold flex items-center justify-center shadow-md shadow-[#635BFF]/30">
+                        {item.step}
+                      </div>
+                    </div>
+                    <h3 className="text-[17px] font-bold text-[#0A2540] mb-2">{item.title}</h3>
+                    <p className="text-[14px] text-muted-foreground leading-relaxed max-w-[280px]">
+                      {item.description}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </AnimatedSection>
+
+      {/* ── DORA Pillars (Detailed Cards) ──────────────────────── */}
+      <AnimatedSection className="py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.div className="text-center mb-16" variants={fadeUp}>
+            <Badge
+              variant="outline"
+              className="mb-4 border-[#635BFF]/20 text-[#635BFF] bg-[#635BFF]/5 font-semibold text-[11px] px-3 py-1 rounded-full"
+            >
+              Regulation coverage
+            </Badge>
+            <h2 className="text-4xl font-bold text-[#0A2540] tracking-tight">
+              The five pillars of DORA
+            </h2>
+            <p className="mt-3 text-muted-foreground max-w-xl mx-auto text-[15px]">
+              Complete coverage across every pillar of the Digital Operational Resilience Act.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-5 gap-5">
+            {[
+              {
+                icon: Shield,
+                title: "ICT Risk Management",
+                article: "Articles 5-16",
+                description: "Establish and maintain a comprehensive ICT risk management framework with continuous monitoring.",
+              },
+              {
+                icon: FileText,
+                title: "Incident Reporting",
+                article: "Articles 17-23",
+                description: "Classify, report, and track major ICT-related incidents to competent authorities within regulatory timelines.",
+              },
+              {
+                icon: CheckCircle2,
+                title: "Resilience Testing",
+                article: "Articles 24-27",
+                description: "Conduct regular digital operational resilience testing including threat-led penetration testing (TLPT).",
+              },
+              {
+                icon: Users,
+                title: "Third-Party Risk",
+                article: "Articles 28-44",
+                description: "Manage and monitor ICT third-party service provider risks with contractual arrangement registers.",
+              },
+              {
+                icon: Globe,
+                title: "Information Sharing",
+                article: "Article 45",
+                description: "Share cyber threat intelligence and vulnerability information across trusted financial entity networks.",
+              },
+            ].map((pillar, i) => {
+              const Icon = pillar.icon;
+              return (
+                <motion.div
+                  key={pillar.title}
+                  className="rounded-xl border border-[#E3E8EF] bg-white p-6 group transition-all duration-300 hover:border-[#635BFF]/30 hover:shadow-xl hover:shadow-[#635BFF]/[0.06] hover:-translate-y-1.5"
+                  variants={fadeUp}
+                  custom={i}
+                >
+                  <div className="size-11 rounded-xl bg-[#635BFF]/8 flex items-center justify-center mb-4 group-hover:bg-[#635BFF]/15 group-hover:scale-110 transition-all duration-300">
+                    <Icon className="size-5 text-[#635BFF]" />
+                  </div>
+                  <div className="text-[10px] font-bold text-[#635BFF] uppercase tracking-widest mb-2">
+                    {pillar.article}
+                  </div>
+                  <h3 className="text-[15px] font-semibold text-[#0A2540] mb-2 group-hover:text-[#635BFF] transition-colors duration-300">
+                    {pillar.title}
+                  </h3>
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
+                    {pillar.description}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </AnimatedSection>
+
+      {/* ── Stats Section (Enterprise Metrics) ─────────────────── */}
+      <AnimatedSection className="py-20 border-y border-[#E3E8EF] bg-[#F6F9FC]">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-4 gap-8"
+            variants={fadeUp}
+          >
+            {[
+              { value: "99.9%", label: "Uptime" },
+              { value: "50K+", label: "Contracts Analyzed" },
+              { value: "200+", label: "Financial Entities" },
+              { value: "SOC2", label: "Type II Certified" },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                className="text-center"
+                variants={fadeUp}
+                custom={i}
+              >
+                <div className="text-4xl md:text-5xl font-bold text-[#0A2540] tracking-tight mb-1">
+                  {stat.value}
+                </div>
+                <div className="text-[13px] text-muted-foreground font-medium">
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </AnimatedSection>
+
+      {/* ── CTA Section (Dark) ─────────────────────────────────── */}
+      <AnimatedSection className="py-24 bg-[#0A2540] relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#635BFF]/[0.08] blur-[120px]" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-[#635BFF]/[0.05] blur-[100px]" />
+        </div>
+
+        <motion.div className="max-w-2xl mx-auto px-6 text-center relative" variants={scaleIn}>
+          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">
+            Ready to automate DORA compliance?
+          </h2>
+          <p className="text-[#8899aa] mb-10 text-[16px] leading-relaxed">
+            Start your 14-day free trial. No credit card required.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/signup">
+              <Button className="h-12 px-8 bg-[#635BFF] hover:bg-[#4F46E5] text-white font-semibold text-[14px] transition-all duration-300 hover:shadow-xl hover:shadow-[#635BFF]/30 hover:-translate-y-0.5">
+                Start Free Trial
+                <ArrowRight className="size-4 ml-2" />
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              className="h-12 px-8 border-white/20 text-white font-semibold text-[14px] bg-transparent hover:bg-white/10 hover:border-white/40 transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Book a Demo
               <ChevronRight className="size-4 ml-1" />
             </Button>
           </div>

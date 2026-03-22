@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useExtractionStore } from "@/store/extraction-store";
 import { toast } from "sonner";
@@ -9,13 +9,15 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { EASE_OUT_EXPO } from "@/lib/motion";
 import {
-  Bell,
+  Settings,
+  Search,
+  Command as CmdIcon,
+  PanelLeftOpen,
+  PanelLeftClose,
   ChevronRight,
   HelpCircle,
   LayoutGrid,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Settings,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/status-badge";
@@ -53,6 +55,19 @@ const BREADCRUMB_MAP: Record<string, { label: string; href: string }[]> = {
   ],
   "/library": [{ label: "Regulatory Library", href: "/library" }],
   "/audit": [{ label: "Audit Log", href: "/audit" }],
+  "/notifications": [{ label: "Notifications", href: "/notifications" }],
+  "/reports": [{ label: "Reports & Exports", href: "/reports" }],
+  "/integrations": [{ label: "Integrations", href: "/integrations" }],
+  "/compliance": [{ label: "Compliance Overview", href: "/compliance" }],
+  "/horizon": [{ label: "Horizon Scanning", href: "/horizon" }],
+  "/manage": [
+    { label: "Enterprise", href: "#" },
+    { label: "Manage", href: "/manage" },
+  ],
+  "/workflows": [
+    { label: "Enterprise", href: "#" },
+    { label: "Workflows", href: "/workflows" },
+  ],
 };
 
 const iconBtnClass =
@@ -62,6 +77,7 @@ export function TopNavbar() {
   const { document, isSidebarCollapsed, toggleSidebar, savedAt } =
     useExtractionStore();
   const pathname = usePathname();
+  const router = useRouter();
   const breadcrumbs = BREADCRUMB_MAP[pathname] ?? [];
   const isExtractionPage = pathname === "/extraction";
 
@@ -142,6 +158,41 @@ export function TopNavbar() {
 
       {/* Right icons */}
       <div className="flex items-center gap-1">
+        {/* Multi-player Presence */}
+        <div className="hidden md:flex items-center -space-x-2 mr-4 border-r border-[#E3E8EF] pr-4">
+           {[
+             { name: "Sarah", color: "bg-emerald-500", img: "SJ" },
+             { name: "Marcus", color: "bg-blue-500", img: "ML" },
+             { name: "Chen", color: "bg-amber-500", img: "WC" }
+           ].map((u, i) => (
+             <motion.div
+               key={u.name}
+               initial={{ opacity: 0, scale: 0.8 }}
+               animate={{ opacity: 1, scale: 1 }}
+               transition={{ delay: i * 0.1 }}
+               className={cn(
+                 "size-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white shadow-sm cursor-pointer hover:-translate-y-1 transition-transform",
+                 u.color
+               )}
+               title={`${u.name} is online`}
+             >
+               {u.img}
+             </motion.div>
+           ))}
+        </div>
+
+        <button 
+          onClick={() => window.dispatchEvent(new Event('open-cmd-k'))}
+          className="hidden lg:flex items-center gap-2.5 h-8 px-3 rounded-lg bg-[#F6F9FC] border border-[#E3E8EF] text-muted-foreground hover:bg-white hover:border-[#635BFF]/30 hover:shadow-sm transition-all duration-200 group mr-2"
+        >
+          <Search className="size-3.5 group-hover:text-[#635BFF] transition-colors" />
+          <span className="text-[12px] font-medium pr-8">Search...</span>
+          <div className="flex items-center gap-1 font-mono text-[9px] bg-white border border-[#E3E8EF] px-1 py-0.5 rounded text-muted-foreground shadow-sm">
+            <CmdIcon className="size-2.5" />
+            <span>K</span>
+          </div>
+        </button>
+
         <Tooltip>
           <TooltipTrigger
             className={iconBtnClass}
@@ -159,13 +210,8 @@ export function TopNavbar() {
 
         <Tooltip>
           <TooltipTrigger
-            className={cn(iconBtnClass, "relative")}
-            onClick={() =>
-              toast("Notifications", {
-                description:
-                  "2 contracts require urgent review. 3 contracts expiring within 30 days.",
-              })
-            }
+            onClick={() => router.push("/notifications")}
+            className={cn(iconBtnClass, "relative border-l border-[#E3E8EF] ml-1 pl-2")}
           >
             <Bell className="size-4" />
             <span className="absolute top-1 right-1 size-1.5 rounded-full bg-[#635BFF] dot-pulse" />
@@ -173,18 +219,16 @@ export function TopNavbar() {
           <TooltipContent side="bottom">Notifications (3)</TooltipContent>
         </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger
-            className={iconBtnClass}
-            onClick={() => (window.location.href = "/settings")}
-          >
-            <Settings className="size-4" />
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Settings</TooltipContent>
-        </Tooltip>
+        {/* Global DORA Status Indicator */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full ml-1">
+           <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+           <span className="text-[10px] font-bold text-emerald-700 tracking-tight uppercase">DORA Compliant</span>
+        </div>
 
         {/* Avatar */}
-        <UserAvatar />
+        <div className="ml-2 pl-3 border-l border-[#E3E8EF]">
+          <UserAvatar />
+        </div>
       </div>
     </header>
   );

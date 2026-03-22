@@ -1,121 +1,186 @@
 import type { Metadata } from "next";
-import {
-  Clock,
-  FileCheck2,
-  FileText,
-  Inbox,
-  Pencil,
-  ThumbsDown,
-  ThumbsUp,
-  Upload,
-  User,
-} from "lucide-react";
+import { Shield, FileLock, FileText, Inbox } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDate, formatRelativeTime } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/format";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Audit Log" };
+export const metadata: Metadata = { title: "Audit Vault" };
 
-const ACTION_ICONS: Record<string, React.ElementType> = {
-  "Document approved": ThumbsUp,
-  "Document rejected": ThumbsDown,
-  "Fields updated": Pencil,
-  "Document uploaded": Upload,
-  "Extraction started": FileCheck2,
-};
-
-const ACTION_COLORS: Record<string, string> = {
-  "Document approved": "bg-emerald-50 text-emerald-600",
-  "Document rejected": "bg-red-50 text-red-600",
-  "Fields updated": "bg-blue-50 text-blue-600",
-  "Document uploaded": "bg-[#635BFF]/8 text-[#635BFF]",
-  "Extraction started": "bg-amber-50 text-amber-600",
-};
-
-export default async function AuditPage() {
+export default async function AuditVaultPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.workspaceId) redirect("/login");
 
   const workspaceId = session.user.workspaceId;
 
-  const activities = await prisma.activity.findMany({
-    where: { workspaceId },
-    include: {
-      user: { select: { name: true, email: true } },
-      contract: { select: { fileName: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
+  const [auditLogs, documents] = await Promise.all([
+    prisma.auditLog.findMany({
+      where: { workspaceId },
+      include: { user: { select: { name: true, email: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }),
+    prisma.policyDocument.findMany({
+      where: { workspaceId },
+      orderBy: { updatedAt: "desc" },
+      take: 10,
+    }),
+  ]);
+
+  const isEmpty = auditLogs.length === 0 && documents.length === 0;
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-6 p-6 overflow-y-auto h-full">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-[#0A2540] tracking-tight">Audit Log</h1>
-            <p className="text-[13px] text-muted-foreground mt-0.5">
-              Immutable, timestamped log of every action for regulatory evidence.
-            </p>
+      <div className="flex flex-col gap-6 p-6 overflow-y-auto h-full custom-scrollbar">
+        {/* Header */}
+        <div>
+          <div className="flex items-center gap-2">
+            <FileLock className="size-5 text-[#635BFF]" />
+            <h1 className="text-xl font-bold text-[#0A2540] tracking-tight">
+              Audit Vault
+            </h1>
           </div>
-          <Badge variant="outline" className="text-[11px] font-semibold border-[#E3E8EF] text-muted-foreground">
-            {activities.length} entries
-          </Badge>
+          <p className="text-[13px] text-muted-foreground mt-0.5">
+            Secure, immutable storage for DORA compliance documentation and audit evidence.
+          </p>
         </div>
 
-        {activities.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center max-w-sm">
-              <div className="mx-auto size-14 rounded-2xl bg-[#F6F9FC] border border-[#E3E8EF] flex items-center justify-center mb-4">
-                <Inbox className="size-6 text-muted-foreground/40" />
+        {isEmpty ? (
+          <Card className="border-[#E3E8EF] shadow-none bg-white rounded-2xl">
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="size-14 rounded-2xl bg-[#635BFF]/10 flex items-center justify-center mb-4">
+                <Inbox className="size-7 text-[#635BFF]" />
               </div>
-              <p className="text-[14px] font-semibold text-[#0A2540]">No activity yet</p>
-              <p className="text-[12px] text-muted-foreground mt-1">
-                Actions on contracts and documents will appear here.
+              <h3 className="text-[15px] font-bold text-[#0A2540] mb-1">No audit data yet</h3>
+              <p className="text-[13px] text-muted-foreground max-w-sm">
+                Audit logs and secure documents will appear here as your team interacts with the platform.
               </p>
             </div>
-          </div>
+          </Card>
         ) : (
-          <div className="flex flex-col gap-2">
-            {activities.map((entry: any) => {
-              const Icon = ACTION_ICONS[entry.action] || FileText;
-              const colorClass = ACTION_COLORS[entry.action] || "bg-[#F6F9FC] text-muted-foreground";
-              const userName = entry.user?.name || entry.user?.email || "System";
+          <>
+            {/* Audit Trail */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[14px] font-bold text-[#0A2540]">Audit Trail</h2>
+                <Badge variant="outline" className="text-[11px] font-semibold border-[#E3E8EF] text-muted-foreground">
+                  {auditLogs.length} entries
+                </Badge>
+              </div>
 
-              return (
-                <Card key={entry.id} className="border-[#E3E8EF] shadow-none bg-white">
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className={cn("size-8 rounded-lg flex items-center justify-center flex-shrink-0", colorClass)}>
-                      <Icon className="size-3.5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-semibold text-[#0A2540]">{entry.action}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        {entry.contract?.fileName || "—"}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <User className="size-3" />
-                        <span className="hidden sm:inline">{userName}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <Clock className="size-3" />
-                        <span>{formatRelativeTime(entry.createdAt.toISOString())}</span>
-                      </div>
-                    </div>
-                  </CardContent>
+              {auditLogs.length > 0 ? (
+                <Card className="border-[#E3E8EF] shadow-none bg-white rounded-2xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-[#F6F9FC] border-b border-[#E3E8EF]">
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Timestamp</th>
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">User</th>
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Action</th>
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Entity</th>
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Entity ID</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {auditLogs.map((log: any) => (
+                          <tr
+                            key={log.id}
+                            className="border-b border-[#F6F9FC] hover:bg-[#F6F9FC]/50 transition-colors"
+                          >
+                            <td className="px-6 py-4 text-[12px] text-muted-foreground whitespace-nowrap">
+                              {formatDate(log.createdAt.toISOString())}
+                            </td>
+                            <td className="px-6 py-4 text-[13px] font-medium text-[#0A2540]">
+                              {log.user?.name ?? log.user?.email ?? "System"}
+                            </td>
+                            <td className="px-6 py-4">
+                              <Badge variant="outline" className="text-[10px] font-bold py-0 capitalize">
+                                {log.action}
+                              </Badge>
+                            </td>
+                            <td className="px-6 py-4 text-[12px] text-muted-foreground capitalize">
+                              {log.entity}
+                            </td>
+                            <td className="px-6 py-4 text-[11px] text-muted-foreground font-mono">
+                              {log.entityId ?? "\u2014"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </Card>
-              );
-            })}
-          </div>
+              ) : (
+                <Card className="border-[#E3E8EF] shadow-none bg-white rounded-2xl p-8 text-center">
+                  <p className="text-[13px] text-muted-foreground">No audit log entries recorded yet.</p>
+                </Card>
+              )}
+            </div>
+
+            {/* Secure Documents */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[14px] font-bold text-[#0A2540]">Secure Documents</h2>
+                <Badge variant="outline" className="text-[11px] font-semibold border-[#E3E8EF] text-muted-foreground">
+                  {documents.length} documents
+                </Badge>
+              </div>
+
+              {documents.length > 0 ? (
+                <Card className="border-[#E3E8EF] shadow-none bg-white rounded-2xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-[#F6F9FC] border-b border-[#E3E8EF]">
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Document Name</th>
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Type</th>
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Status</th>
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Version</th>
+                          <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Date Added</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {documents.map((doc: any) => (
+                          <tr
+                            key={doc.id}
+                            className="border-b border-[#F6F9FC] hover:bg-[#F6F9FC]/50 transition-colors"
+                          >
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="size-8 rounded-lg bg-[#635BFF]/10 flex items-center justify-center text-[#635BFF]">
+                                  <FileText className="size-4" />
+                                </div>
+                                <span className="text-[13px] font-bold text-[#0A2540]">{doc.title}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <Badge variant="outline" className="text-[10px] font-bold py-0">{doc.type}</Badge>
+                            </td>
+                            <td className="px-6 py-4">
+                              <Badge variant="outline" className="text-[10px] font-bold py-0 capitalize">{doc.status}</Badge>
+                            </td>
+                            <td className="px-6 py-4 text-[12px] text-muted-foreground">{doc.version}</td>
+                            <td className="px-6 py-4 text-[12px] text-muted-foreground">
+                              {formatDate(doc.updatedAt.toISOString())}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              ) : (
+                <Card className="border-[#E3E8EF] shadow-none bg-white rounded-2xl p-8 text-center">
+                  <p className="text-[13px] text-muted-foreground">No secure documents uploaded yet.</p>
+                </Card>
+              )}
+            </div>
+          </>
         )}
       </div>
     </AppShell>

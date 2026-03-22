@@ -53,15 +53,24 @@ model Workspace {
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
-  users            User[]
-  contracts        Contract[]
-  activities       Activity[]
-  subscriptions    Subscription[]
-  incidents        Incident[]
-  ictAssets        IctAsset[]
-  policyDocs       PolicyDocument[]
-  vendors          Vendor[]
-  resilienceTests  ResilienceTest[]
+  users              User[]
+  contracts          Contract[]
+  activities         Activity[]
+  subscriptions      Subscription[]
+  incidents          Incident[]
+  ictAssets           IctAsset[]
+  policyDocs         PolicyDocument[]
+  vendors            Vendor[]
+  resilienceTests    ResilienceTest[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+  riskAssessments    RiskAssessment[]
+  complianceChecks   ComplianceCheck[]
+  reports            Report[]
+  horizonAlerts      HorizonAlert[]
+  integrations       Integration[]
+  apiKeys            ApiKey[]
+  webhookEndpoints   WebhookEndpoint[]
 
   @@map("workspaces")
 }
@@ -77,10 +86,15 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  contracts  Contract[]
-  activities Activity[]
-  incidents  Incident[]
+  workspace         Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contracts         Contract[]
+  activities        Activity[]
+  incidents         Incident[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  riskAssessments   RiskAssessment[]
+  complianceChecks  ComplianceCheck[]
+  reports           Report[]
 
   @@index([workspaceId])
   @@map("users")
@@ -219,6 +233,9 @@ model ResilienceTest {
   status         String
   findings       Int       @default(0)
   scheduledAt    DateTime? @map("scheduled_at")
+  completedAt    DateTime? @map("completed_at")
+  scope          String?
+  methodology    String?
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
@@ -226,4 +243,220 @@ model ResilienceTest {
 
   @@index([workspaceId])
   @@map("resilience_tests")
+}
+
+// ────────────────────────────────────────────
+// Notifications
+// ────────────────────────────────────────────
+
+model Notification {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  userId      String    @map("user_id")
+  title       String
+  message     String
+  type        String    @default("info") // info, warning, success, error
+  category    String    @default("system") // system, incident, contract, compliance, vendor
+  read        Boolean   @default(false)
+  actionUrl   String?   @map("action_url")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+// ────────────────────────────────────────────
+// Audit Log (detailed)
+// ────────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  userId      String?  @map("user_id")
+  action      String
+  entity      String   // contract, incident, vendor, etc.
+  entityId    String?  @map("entity_id")
+  metadata    Json?
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([createdAt])
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}
+
+// ────────────────────────────────────────────
+// Risk Assessments
+// ────────────────────────────────────────────
+
+model RiskAssessment {
+  id             String    @id @default(cuid())
+  workspaceId    String    @map("workspace_id")
+  title          String
+  scope          String
+  methodology    String?
+  overallScore   Float?    @map("overall_score")
+  status         String    @default("Draft") // Draft, In Progress, Completed, Approved
+  findings       Int       @default(0)
+  mitigations    Int       @default(0)
+  assessorId     String?   @map("assessor_id")
+  completedAt    DateTime? @map("completed_at")
+  nextReviewAt   DateTime? @map("next_review_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  assessor       User?     @relation(fields: [assessorId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@map("risk_assessments")
+}
+
+// ────────────────────────────────────────────
+// Compliance Checks
+// ────────────────────────────────────────────
+
+model ComplianceCheck {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  pillar        String    // ict_risk, incident_reporting, resilience_testing, third_party_risk, information_sharing
+  requirement   String
+  article       String
+  status        String    @default("Not Started") // Not Started, In Progress, Compliant, Non-Compliant, Partially Compliant
+  evidence      String?
+  notes         String?
+  assigneeId    String?   @map("assignee_id")
+  dueDate       DateTime? @map("due_date")
+  completedAt   DateTime? @map("completed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  assignee      User?     @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([pillar])
+  @@map("compliance_checks")
+}
+
+// ────────────────────────────────────────────
+// Reports
+// ────────────────────────────────────────────
+
+model Report {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  title         String
+  type          String    // compliance_summary, incident_report, risk_assessment, vendor_audit, board_report
+  format        String    @default("PDF") // PDF, XLSX, CSV
+  status        String    @default("Generating") // Generating, Ready, Failed
+  fileUrl       String?   @map("file_url")
+  parameters    Json?
+  generatedById String?   @map("generated_by_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  generatedBy   User?     @relation(fields: [generatedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@map("reports")
+}
+
+// ────────────────────────────────────────────
+// Horizon Alerts (Regulatory Intelligence)
+// ────────────────────────────────────────────
+
+model HorizonAlert {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  title         String
+  source        String    // ESMA, EBA, EIOPA, CERT-EU, BaFin, etc.
+  category      String    // Regulatory, Cyber Threat, Guideline, Jurisdiction
+  impact        String    @default("Medium") // Critical, High, Medium, Low
+  summary       String
+  referenceUrl  String?   @map("reference_url")
+  doraArticle   String?   @map("dora_article")
+  read          Boolean   @default(false)
+  dismissed     Boolean   @default(false)
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([impact])
+  @@map("horizon_alerts")
+}
+
+// ────────────────────────────────────────────
+// Integrations
+// ────────────────────────────────────────────
+
+model Integration {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  name          String
+  provider      String    // slack, jira, servicenow, pagerduty, teams, email
+  status        String    @default("Inactive") // Active, Inactive, Error
+  config        Json?
+  lastSyncAt    DateTime? @map("last_sync_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("integrations")
+}
+
+// ────────────────────────────────────────────
+// API Keys
+// ────────────────────────────────────────────
+
+model ApiKey {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  name          String
+  keyPrefix     String    @map("key_prefix") // first 8 chars for display
+  keyHash       String    @map("key_hash")
+  permissions   String[]  @default([])
+  lastUsedAt    DateTime? @map("last_used_at")
+  expiresAt     DateTime? @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("api_keys")
+}
+
+// ────────────────────────────────────────────
+// Webhooks
+// ────────────────────────────────────────────
+
+model WebhookEndpoint {
+  id            String    @id @default(cuid())
+  workspaceId   String    @map("workspace_id")
+  url           String
+  events        String[]  @default([])
+  secret        String
+  status        String    @default("Active") // Active, Inactive, Error
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+  failureCount  Int       @default(0) @map("failure_count")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("webhook_endpoints")
 }

@@ -24,8 +24,12 @@ import {
   Home,
   Settings,
   Shield,
+  Search,
   Users,
   Zap,
+  Globe,
+  Bell,
+  Plug,
 } from "lucide-react";
 import { EASE_OUT_EXPO } from "@/lib/motion";
 
@@ -61,6 +65,7 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
           { label: "Third-Party ICT", href: "/contracts" },
         ],
       },
+      { icon: Shield,     label: "Compliance Overview", href: "/compliance" },
       { icon: FileCheck2, label: "Extractions", href: "/extraction" },
       { icon: FileClock,  label: "In Review",   href: "/review" },
       { icon: GitBranch,  label: "Register",    href: "/register" },
@@ -79,13 +84,18 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
     title: "Enterprise",
     items: [
       { icon: Crown, label: "Manage", href: "/manage" },
+      { icon: GitBranch, label: "Workflows", href: "/workflows" },
+      { icon: Plug, label: "Integrations", href: "/integrations" },
     ],
   },
   {
     title: "Resources",
     items: [
+      { icon: Globe, label: "Horizon Scanning", href: "/horizon" },
       { icon: BookOpen, label: "Regulatory Library", href: "/library" },
+      { icon: BarChart3, label: "Reports", href: "/reports" },
       { icon: Clock,    label: "Audit Log",          href: "/audit" },
+      { icon: Bell,     label: "Notifications",      href: "/notifications" },
     ],
   },
 ];
@@ -109,6 +119,20 @@ export function LeftSidebar() {
       style={{ pointerEvents: isSidebarCollapsed ? "none" : "auto" }}
     >
       <div className="flex flex-col gap-0.5 p-2 pt-3 overflow-y-auto flex-1 min-w-56">
+        {/* Cmd+K Fake Trigger */}
+        <button 
+          onClick={() => window.dispatchEvent(new Event('open-cmd-k'))}
+          className="w-full flex items-center justify-between px-2.5 py-2 mb-3 bg-[#F6F9FC] border border-[#E3E8EF] rounded-lg text-muted-foreground hover:bg-[#E3E8EF]/50 hover:text-[#0A2540] transition-colors group"
+        >
+          <div className="flex items-center gap-2">
+            <Search className="size-3.5 group-hover:text-[#635BFF] transition-colors" />
+            <span className="text-[13px] font-medium">Search</span>
+          </div>
+          <div className="flex items-center gap-1 font-mono text-[10px] bg-white border border-[#E3E8EF] px-1.5 py-0.5 rounded text-muted-foreground shadow-sm">
+            <span>⌘</span><span>K</span>
+          </div>
+        </button>
+
         {NAV_SECTIONS.map((section, si) => (
           <div key={si} className={cn(si > 0 && "mt-3")}>
             {section.title && (
@@ -208,7 +232,7 @@ function NavEntry({
         {isActive && (
           <motion.span
             layoutId="nav-active-bg"
-            className="absolute inset-0 rounded-md bg-[#635BFF]/8"
+            className="absolute inset-0 rounded-md bg-gradient-to-r from-[#635BFF]/10 to-transparent border-l-2 border-[#635BFF]"
             transition={{ duration: 0.28, ease: EASE_OUT_EXPO }}
           />
         )}
