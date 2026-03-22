@@ -53,10 +53,15 @@ model Workspace {
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
-  users         User[]
-  contracts     Contract[]
-  activities    Activity[]
-  subscriptions Subscription[]
+  users            User[]
+  contracts        Contract[]
+  activities       Activity[]
+  subscriptions    Subscription[]
+  incidents        Incident[]
+  ictAssets        IctAsset[]
+  policyDocs       PolicyDocument[]
+  vendors          Vendor[]
+  resilienceTests  ResilienceTest[]
 
   @@map("workspaces")
 }
@@ -75,6 +80,7 @@ model User {
   workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   contracts  Contract[]
   activities Activity[]
+  incidents  Incident[]
 
   @@index([workspaceId])
   @@map("users")
@@ -133,4 +139,91 @@ model Subscription {
 
   @@index([workspaceId])
   @@map("subscriptions")
+}
+
+model Incident {
+  id             String    @id @default(cuid())
+  workspaceId    String    @map("workspace_id")
+  title          String
+  status         String
+  severity       String
+  description    String?
+  reportedById   String?   @map("reported_by_id")
+  resolvedAt     DateTime? @map("resolved_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  reportedBy     User?     @relation(fields: [reportedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@map("incidents")
+}
+
+model IctAsset {
+  id             String    @id @default(cuid())
+  workspaceId    String    @map("workspace_id")
+  name           String
+  category       String
+  criticality    String
+  riskScore      Float?    @map("risk_score")
+  lastAssessedAt DateTime? @map("last_assessed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("ict_assets")
+}
+
+model PolicyDocument {
+  id             String    @id @default(cuid())
+  workspaceId    String    @map("workspace_id")
+  title          String
+  type           String
+  status         String
+  version        String
+  fileUrl        String?   @map("file_url")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("policy_documents")
+}
+
+model Vendor {
+  id             String    @id @default(cuid())
+  workspaceId    String    @map("workspace_id")
+  name           String
+  category       String
+  criticality    String
+  status         String
+  nextReviewAt   DateTime? @map("next_review_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("vendors")
+}
+
+model ResilienceTest {
+  id             String    @id @default(cuid())
+  workspaceId    String    @map("workspace_id")
+  name           String
+  type           String
+  status         String
+  findings       Int       @default(0)
+  scheduledAt    DateTime? @map("scheduled_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("resilience_tests")
 }

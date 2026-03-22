@@ -1,6 +1,7 @@
 "use client";
 
-import { BookOpen, Search, FileText, Download, MoreVertical, Plus, Filter } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, Search, FileText, Download, MoreVertical, Plus, Filter, Loader2, Inbox } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/format";
+import { getDoraData } from "@/app/actions/dora";
 
-const documents = [
+const mockDocuments = [
   { id: "POL-001", title: "Information Security Policy", type: "Policy", status: "Active", lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), version: "v2.4" },
   { id: "PRO-042", title: "Incident Response Plan", type: "Procedure", status: "Active", lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString(), version: "v1.2" },
   { id: "SOP-118", title: "Vendor Onboarding SOP", type: "Standard", status: "Draft", lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), version: "v3.0-draft" },
@@ -29,6 +31,18 @@ function getStatusColor(status: string) {
 }
 
 export default function LibraryPage() {
+  const [data, setData] = useState<any[]>([]);
+  const [isTest, setIsTest] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getDoraData().then((res) => {
+      setIsTest(res.isTestAccount);
+      setData(res.data?.policies || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
   const handleUpload = () => {
     toast.success("Upload dialog opened", {
       description: "Upload a new policy or procedure document.",
@@ -41,7 +55,20 @@ export default function LibraryPage() {
     });
   };
 
-  const dashboardContent = (
+  const displayDocuments = isTest ? mockDocuments : data.map(d => ({
+    id: d.id,
+    title: d.title,
+    type: d.type,
+    status: d.status,
+    lastUpdated: d.updatedAt || d.createdAt,
+    version: d.version
+  }));
+
+  const dashboardContent = loading ? (
+    <div className="flex items-center justify-center p-12">
+      <Loader2 className="size-6 text-[#635BFF] animate-spin" />
+    </div>
+  ) : (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between mt-2">
         <div>
@@ -65,42 +92,55 @@ export default function LibraryPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {documents.map((doc) => (
-          <Card key={doc.id} className="border-[#E3E8EF] shadow-none bg-white hover:border-[#635BFF]/30 hover:shadow-md transition-all duration-200 group flex flex-col cursor-pointer">
-            <CardContent className="p-4 flex-1">
-              <div className="flex items-start justify-between mb-3">
-                <div className="size-8 rounded-lg bg-[#635BFF]/10 flex items-center justify-center">
-                  <FileText className="size-4 text-[#635BFF]" />
+      {displayDocuments.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 text-center bg-white border border-[#E3E8EF] rounded-xl shadow-sm">
+          <div className="size-12 rounded-full bg-[#F6F9FC] flex items-center justify-center mb-3">
+            <Inbox className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-[14px] font-semibold text-[#0A2540]">No documents found</p>
+          <p className="text-[12px] text-muted-foreground mt-1 max-w-[250px]">You haven't uploaded any compliance or governance policies yet.</p>
+          <Button onClick={handleUpload} variant="outline" className="mt-4 h-8 text-[12px] text-[#635BFF] border-[#E3E8EF]">
+            Upload First Document
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {displayDocuments.map((doc) => (
+            <Card key={doc.id} className="border-[#E3E8EF] shadow-none bg-white hover:border-[#635BFF]/30 hover:shadow-md transition-all duration-200 group flex flex-col cursor-pointer">
+              <CardContent className="p-4 flex-1">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="size-8 rounded-lg bg-[#635BFF]/10 flex items-center justify-center">
+                    <FileText className="size-4 text-[#635BFF]" />
+                  </div>
+                  <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getStatusColor(doc.status))}>
+                    {doc.status}
+                  </Badge>
                 </div>
-                <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getStatusColor(doc.status))}>
-                  {doc.status}
-                </Badge>
-              </div>
-              <h3 className="text-[14px] font-bold text-[#0A2540] line-clamp-1 group-hover:text-[#635BFF] transition-colors">{doc.title}</h3>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">{doc.type}</span>
-                <div className="size-1 rounded-full bg-[#E3E8EF]" />
-                <span className="text-[11px] text-muted-foreground font-mono">{doc.id}</span>
-              </div>
-            </CardContent>
-            <CardFooter className="p-4 pt-0 border-t border-[#E3E8EF] flex items-center justify-between bg-[#F6F9FC]/50 group-hover:bg-[#F6F9FC] transition-colors mt-auto">
-              <div className="flex flex-col gap-0.5 pt-3">
-                 <span className="text-[10px] text-muted-foreground font-semibold">Updated {formatRelativeTime(doc.lastUpdated)}</span>
-                 <span className="text-[10px] text-muted-foreground">Version {doc.version}</span>
-              </div>
-              <div className="flex items-center gap-1 mt-3">
-                <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-[#635BFF] hover:bg-[#635BFF]/10" onClick={(e) => { e.stopPropagation(); handleDownload(doc.title); }}>
-                  <Download className="size-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-[#0A2540]" onClick={(e) => e.stopPropagation()}>
-                  <MoreVertical className="size-3.5" />
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+                <h3 className="text-[14px] font-bold text-[#0A2540] line-clamp-1 group-hover:text-[#635BFF] transition-colors">{doc.title}</h3>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">{doc.type}</span>
+                  <div className="size-1 rounded-full bg-[#E3E8EF]" />
+                  <span className="text-[11px] text-muted-foreground font-mono">{doc.id}</span>
+                </div>
+              </CardContent>
+              <CardFooter className="p-4 pt-0 border-t border-[#E3E8EF] flex items-center justify-between bg-[#F6F9FC]/50 group-hover:bg-[#F6F9FC] transition-colors mt-auto">
+                <div className="flex flex-col gap-0.5 pt-3">
+                   <span className="text-[10px] text-muted-foreground font-semibold">Updated {formatRelativeTime(doc.lastUpdated)}</span>
+                   <span className="text-[10px] text-muted-foreground">Version {doc.version}</span>
+                </div>
+                <div className="flex items-center gap-1 mt-3">
+                  <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-[#0A2540] hover:bg-black/5" onClick={(e) => { e.stopPropagation(); handleDownload(doc.title); }}>
+                    <Download className="size-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-[#0A2540] hover:bg-black/5" onClick={(e) => e.stopPropagation()}>
+                    <MoreVertical className="size-3.5" />
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 

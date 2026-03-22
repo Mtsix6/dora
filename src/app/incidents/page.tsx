@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertTriangle, Clock, Activity, ShieldAlert, Plus, ArrowRight, FileText } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, Clock, Activity, ShieldAlert, Plus, ArrowRight, FileText, Loader2, Inbox } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,15 +17,16 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/format";
+import { getDoraData } from "@/app/actions/dora";
 
-const stats = [
+const mockStats = [
   { title: "Open Incidents", value: "3", icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50" },
   { title: "Critical Severity", value: "1", icon: ShieldAlert, color: "text-red-600", bg: "bg-red-50" },
   { title: "Avg. Resolution Time", value: "4.2h", icon: Clock, color: "text-emerald-600", bg: "bg-emerald-50" },
   { title: "Total This Month", value: "12", icon: Activity, color: "text-[#635BFF]", bg: "bg-[#635BFF]/10" },
 ];
 
-const incidents = [
+const mockIncidents = [
   { id: "INC-2026-042", title: "Core Banking API Latency", severity: "Critical", status: "Investigating", reportedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), owner: "Network Team" },
   { id: "INC-2026-041", title: "Payment Gateway Timeout", severity: "High", status: "Mitigated", reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(), owner: "Cloud Ops" },
   { id: "INC-2026-040", title: "Third-party Data Feed Delay", severity: "Medium", status: "Resolved", reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), owner: "Data Eng" },
@@ -50,13 +52,45 @@ function getStatusColor(status: string) {
 }
 
 export default function IncidentsPage() {
+  const [data, setData] = useState<any[]>([]);
+  const [isTest, setIsTest] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getDoraData().then((res) => {
+      setIsTest(res.isTestAccount);
+      setData(res.data?.incidents || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
   const handleReportIncident = () => {
     toast.success("Incident Report Dialog opened", {
       description: "In a real environment, this would open a form to classify and report an ICT incident.",
     });
   };
 
-  const dashboardContent = (
+  const displayIncidents = isTest ? mockIncidents : data.map(d => ({
+    id: d.id,
+    title: d.title,
+    severity: d.severity,
+    status: d.status,
+    reportedAt: d.createdAt,
+    owner: "Unassigned"
+  }));
+
+  const displayStats = isTest ? mockStats : [
+    { title: "Open Incidents", value: data.filter(d => d.status !== "Resolved").length.toString(), icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50" },
+    { title: "Critical Severity", value: data.filter(d => d.severity === "Critical").length.toString(), icon: ShieldAlert, color: "text-red-600", bg: "bg-red-50" },
+    { title: "Avg. Resolution Time", value: "-", icon: Clock, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { title: "Total This Month", value: data.length.toString(), icon: Activity, color: "text-[#635BFF]", bg: "bg-[#635BFF]/10" },
+  ];
+
+  const dashboardContent = loading ? (
+    <div className="flex items-center justify-center p-12">
+      <Loader2 className="size-6 text-[#635BFF] animate-spin" />
+    </div>
+  ) : (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between mt-2">
         <div>
@@ -70,7 +104,7 @@ export default function IncidentsPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => {
+        {displayStats.map((stat, i) => {
           const Icon = stat.icon;
           return (
             <Card key={i} className="border-[#E3E8EF] shadow-none bg-white">
@@ -96,43 +130,53 @@ export default function IncidentsPage() {
           </Button>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-[#F6F9FC]">
-              <TableRow>
-                <TableHead className="w-[120px] text-[11px] font-semibold text-muted-foreground">ID</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Title</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Severity</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Status</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Owner</TableHead>
-                <TableHead className="text-right text-[11px] font-semibold text-muted-foreground">Reported</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {incidents.map((incident) => (
-                <TableRow key={incident.id} className="hover:bg-[#F6F9FC]/50 transition-colors">
-                  <TableCell className="font-semibold text-[12px] text-[#0A2540]">
-                    <div className="flex items-center gap-2">
-                       <FileText className="size-3.5 text-muted-foreground" />
-                       {incident.id}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-[12px] font-medium text-[#0A2540]">{incident.title}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getSeverityColor(incident.severity))}>
-                      {incident.severity}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getStatusColor(incident.status))}>
-                      {incident.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-[12px] text-muted-foreground">{incident.owner}</TableCell>
-                  <TableCell className="text-right text-[12px] text-muted-foreground tabular-nums">{formatRelativeTime(incident.reportedAt)}</TableCell>
+          {displayIncidents.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <div className="size-12 rounded-full bg-[#F6F9FC] flex items-center justify-center mb-3">
+                <Inbox className="size-5 text-muted-foreground" />
+              </div>
+              <p className="text-[14px] font-semibold text-[#0A2540]">No incidents found</p>
+              <p className="text-[12px] text-muted-foreground mt-1 max-w-[200px]">You haven't reported any ICT incidents yet.</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader className="bg-[#F6F9FC]">
+                <TableRow>
+                  <TableHead className="w-[120px] text-[11px] font-semibold text-muted-foreground">ID</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Title</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Severity</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Owner</TableHead>
+                  <TableHead className="text-right text-[11px] font-semibold text-muted-foreground">Reported</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {displayIncidents.map((incident) => (
+                  <TableRow key={incident.id} className="hover:bg-[#F6F9FC]/50 transition-colors">
+                    <TableCell className="font-semibold text-[12px] text-[#0A2540]">
+                      <div className="flex items-center gap-2">
+                         <FileText className="size-3.5 text-muted-foreground" />
+                         <span className="truncate max-w-[80px]">{incident.id}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[12px] font-medium text-[#0A2540]">{incident.title}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getSeverityColor(incident.severity))}>
+                        {incident.severity}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getStatusColor(incident.status))}>
+                        {incident.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-[12px] text-muted-foreground">{incident.owner}</TableCell>
+                    <TableCell className="text-right text-[12px] text-muted-foreground tabular-nums">{formatRelativeTime(incident.reportedAt)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

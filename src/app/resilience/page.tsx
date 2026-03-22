@@ -1,6 +1,7 @@
 "use client";
 
-import { Shield, PlayCircle, FileCheck, CheckCircle2, History, ArrowRight, ShieldAlert, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Shield, PlayCircle, FileCheck, CheckCircle2, History, ArrowRight, ShieldAlert, Plus, Loader2, Inbox } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,15 +17,16 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/format";
+import { getDoraData } from "@/app/actions/dora";
 
-const stats = [
+const mockStats = [
   { title: "Completed Tests", value: "24", icon: FileCheck, color: "text-[#635BFF]", bg: "bg-[#635BFF]/10" },
   { title: "Active Findings", value: "8", icon: ShieldAlert, color: "text-amber-600", bg: "bg-amber-50" },
   { title: "Critical Issues", value: "0", icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
   { title: "Next Scheduled", value: "14 Days", icon: History, color: "text-blue-600", bg: "bg-blue-50" },
 ];
 
-const tests = [
+const mockTests = [
   { id: "TST-089", name: "Q3 Penetration Test", type: "Penetration Test", status: "Scheduled", date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(), findings: 0 },
   { id: "TST-088", name: "Annual TLPT Assessment", type: "TLPT", status: "In Progress", date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), findings: 3 },
   { id: "TST-087", name: "Network Vulnerability Scan", type: "Vulnerability Scan", status: "Completed", date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 45).toISOString(), findings: 12 },
@@ -41,13 +43,47 @@ function getStatusColor(status: string) {
 }
 
 export default function ResiliencePage() {
+  const [data, setData] = useState<any[]>([]);
+  const [isTest, setIsTest] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getDoraData().then((res) => {
+      setIsTest(res.isTestAccount);
+      setData(res.data?.tests || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
   const handleScheduleTest = () => {
     toast.success("Test Scheduler opened", {
       description: "Schedule a new penetration test or vulnerability scan.",
     });
   };
 
-  const dashboardContent = (
+  const displayTests = isTest ? mockTests : data.map(d => ({
+    id: d.id,
+    name: d.name,
+    type: d.type,
+    status: d.status,
+    findings: d.findings || 0,
+    date: d.scheduledAt || d.createdAt,
+  }));
+
+  const activeObj = data.reduce((acc, d) => acc + (d.findings || 0), 0);
+
+  const displayStats = isTest ? mockStats : [
+    { title: "Completed Tests", value: data.filter(d => d.status === "Completed").length.toString(), icon: FileCheck, color: "text-[#635BFF]", bg: "bg-[#635BFF]/10" },
+    { title: "Active Findings", value: activeObj.toString(), icon: ShieldAlert, color: "text-amber-600", bg: "bg-amber-50" },
+    { title: "Critical Issues", value: "0", icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { title: "Next Scheduled", value: data.length > 0 ? "Check Calendar" : "-", icon: History, color: "text-blue-600", bg: "bg-blue-50" },
+  ];
+
+  const dashboardContent = loading ? (
+    <div className="flex items-center justify-center p-12">
+      <Loader2 className="size-6 text-[#635BFF] animate-spin" />
+    </div>
+  ) : (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between mt-2">
         <div>
@@ -61,7 +97,7 @@ export default function ResiliencePage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => {
+        {displayStats.map((stat, i) => {
           const Icon = stat.icon;
           return (
             <Card key={i} className="border-[#E3E8EF] shadow-none bg-white">
@@ -87,45 +123,55 @@ export default function ResiliencePage() {
           </Button>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-[#F6F9FC]">
-              <TableRow>
-                <TableHead className="w-[140px] text-[11px] font-semibold text-muted-foreground">Test ID</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Name</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Type</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Status</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Findings</TableHead>
-                <TableHead className="text-right text-[11px] font-semibold text-muted-foreground">Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tests.map((test) => (
-                <TableRow key={test.id} className="hover:bg-[#F6F9FC]/50 transition-colors">
-                  <TableCell className="font-semibold text-[12px] text-[#0A2540]">
-                    <div className="flex items-center gap-2">
-                       <PlayCircle className="size-3.5 text-muted-foreground" />
-                       {test.id}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-[12px] font-medium text-[#0A2540]">{test.name}</TableCell>
-                  <TableCell className="text-[12px] text-muted-foreground">{test.type}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getStatusColor(test.status))}>
-                      {test.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-[12px] text-muted-foreground tabular-nums">
-                    {test.findings > 0 ? (
-                      <span className="text-amber-600 font-semibold">{test.findings} issues</span>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right text-[12px] text-muted-foreground tabular-nums">{formatRelativeTime(test.date)}</TableCell>
+          {displayTests.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <div className="size-12 rounded-full bg-[#F6F9FC] flex items-center justify-center mb-3">
+                <Inbox className="size-5 text-muted-foreground" />
+              </div>
+              <p className="text-[14px] font-semibold text-[#0A2540]">No tests scheduled</p>
+              <p className="text-[12px] text-muted-foreground mt-1 max-w-[200px]">You haven't scheduled any resilience tests.</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader className="bg-[#F6F9FC]">
+                <TableRow>
+                  <TableHead className="w-[140px] text-[11px] font-semibold text-muted-foreground">Test ID</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Name</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Type</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Findings</TableHead>
+                  <TableHead className="text-right text-[11px] font-semibold text-muted-foreground">Date</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {displayTests.map((test) => (
+                  <TableRow key={test.id} className="hover:bg-[#F6F9FC]/50 transition-colors">
+                    <TableCell className="font-semibold text-[12px] text-[#0A2540]">
+                      <div className="flex items-center gap-2">
+                         <PlayCircle className="size-3.5 text-muted-foreground" />
+                         <span className="truncate max-w-[80px]">{test.id}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[12px] font-medium text-[#0A2540]">{test.name}</TableCell>
+                    <TableCell className="text-[12px] text-muted-foreground">{test.type}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getStatusColor(test.status))}>
+                        {test.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-[12px] text-muted-foreground tabular-nums">
+                      {test.findings > 0 ? (
+                        <span className="text-amber-600 font-semibold">{test.findings} issues</span>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right text-[12px] text-muted-foreground tabular-nums">{formatRelativeTime(test.date)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

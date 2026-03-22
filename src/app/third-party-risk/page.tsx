@@ -1,6 +1,7 @@
 "use client";
 
-import { Building2, ShieldAlert, FileCheck2, Users, AlertTriangle, ArrowRight, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Building2, ShieldAlert, FileCheck2, Users, AlertTriangle, ArrowRight, Plus, Loader2, Inbox } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,15 +17,16 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/format";
+import { getDoraData } from "@/app/actions/dora";
 
-const stats = [
+const mockStats = [
   { title: "Total Vendors", value: "48", icon: Building2, color: "text-[#635BFF]", bg: "bg-[#635BFF]/10" },
   { title: "Critical ICT Providers", value: "12", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
   { title: "Compliant Contracts", value: "85%", icon: FileCheck2, color: "text-emerald-600", bg: "bg-emerald-50" },
   { title: "Subcontractors", value: "156", icon: Users, color: "text-amber-600", bg: "bg-amber-50" },
 ];
 
-const vendors = [
+const mockVendors = [
   { id: "VND-AWS", name: "Amazon Web Services", category: "Cloud Infrastructure", criticality: "Critical", status: "Compliant", nextReview: new Date(Date.now() + 1000 * 60 * 60 * 24 * 45).toISOString() },
   { id: "VND-MSFT", name: "Microsoft Azure", category: "Cloud Infrastructure", criticality: "Critical", status: "Review Pending", nextReview: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5).toISOString() },
   { id: "VND-DDOG", name: "Datadog", category: "Monitoring", criticality: "High", status: "Compliant", nextReview: new Date(Date.now() + 1000 * 60 * 60 * 24 * 120).toISOString() },
@@ -49,13 +51,45 @@ function getStatusColor(status: string) {
 }
 
 export default function ThirdPartyRiskPage() {
+  const [data, setData] = useState<any[]>([]);
+  const [isTest, setIsTest] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getDoraData().then((res) => {
+      setIsTest(res.isTestAccount);
+      setData(res.data?.vendors || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
   const handleAddVendor = () => {
     toast.success("Add Vendor Dialog opened", {
       description: "Onboard a new third-party ICT service provider.",
     });
   };
 
-  const dashboardContent = (
+  const displayVendors = isTest ? mockVendors : data.map(d => ({
+    id: d.id,
+    name: d.name,
+    category: d.category,
+    criticality: d.criticality,
+    status: d.status,
+    nextReview: d.nextReviewAt || d.createdAt,
+  }));
+
+  const displayStats = isTest ? mockStats : [
+    { title: "Total Vendors", value: data.length.toString(), icon: Building2, color: "text-[#635BFF]", bg: "bg-[#635BFF]/10" },
+    { title: "Critical ICT Providers", value: data.filter(d => d.criticality === "Critical").length.toString(), icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
+    { title: "Compliant Contracts", value: data.length > 0 ? "100%" : "-", icon: FileCheck2, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { title: "Subcontractors", value: "0", icon: Users, color: "text-amber-600", bg: "bg-amber-50" },
+  ];
+
+  const dashboardContent = loading ? (
+    <div className="flex items-center justify-center p-12">
+      <Loader2 className="size-6 text-[#635BFF] animate-spin" />
+    </div>
+  ) : (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between mt-2">
         <div>
@@ -69,7 +103,7 @@ export default function ThirdPartyRiskPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => {
+        {displayStats.map((stat, i) => {
           const Icon = stat.icon;
           return (
             <Card key={i} className="border-[#E3E8EF] shadow-none bg-white">
@@ -95,47 +129,57 @@ export default function ThirdPartyRiskPage() {
           </Button>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-[#F6F9FC]">
-              <TableRow>
-                <TableHead className="w-[180px] text-[11px] font-semibold text-muted-foreground">Provider</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Category</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">Criticality</TableHead>
-                <TableHead className="text-[11px] font-semibold text-muted-foreground">DORA Status</TableHead>
-                <TableHead className="text-right text-[11px] font-semibold text-muted-foreground">Next Review</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {vendors.map((vendor) => (
-                <TableRow key={vendor.id} className="hover:bg-[#F6F9FC]/50 transition-colors">
-                  <TableCell className="font-semibold text-[12px] text-[#0A2540]">
-                    <div className="flex flex-col">
-                       <span>{vendor.name}</span>
-                       <span className="font-normal text-[11px] text-muted-foreground">{vendor.id}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-[12px] text-[#0A2540] font-medium">{vendor.category}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getCriticalityColor(vendor.criticality))}>
-                      {vendor.criticality}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getStatusColor(vendor.status))}>
-                      {vendor.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right text-[12px] text-muted-foreground tabular-nums">
-                     {new Date(vendor.nextReview).getTime() < Date.now() ? (
-                        <span className="text-red-600 font-semibold">Overdue ({formatRelativeTime(vendor.nextReview)})</span>
-                     ) : (
-                        formatRelativeTime(vendor.nextReview)
-                     )}
-                  </TableCell>
+          {displayVendors.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <div className="size-12 rounded-full bg-[#F6F9FC] flex items-center justify-center mb-3">
+                <Inbox className="size-5 text-muted-foreground" />
+              </div>
+              <p className="text-[14px] font-semibold text-[#0A2540]">No vendors found</p>
+              <p className="text-[12px] text-muted-foreground mt-1 max-w-[200px]">You haven't added any third-party providers.</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader className="bg-[#F6F9FC]">
+                <TableRow>
+                  <TableHead className="w-[180px] text-[11px] font-semibold text-muted-foreground">Provider</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Category</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">Criticality</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-muted-foreground">DORA Status</TableHead>
+                  <TableHead className="text-right text-[11px] font-semibold text-muted-foreground">Next Review</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {displayVendors.map((vendor) => (
+                  <TableRow key={vendor.id} className="hover:bg-[#F6F9FC]/50 transition-colors">
+                    <TableCell className="font-semibold text-[12px] text-[#0A2540]">
+                      <div className="flex flex-col">
+                         <span>{vendor.name}</span>
+                         <span className="font-normal text-[11px] text-muted-foreground">{vendor.id}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[12px] text-[#0A2540] font-medium">{vendor.category}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getCriticalityColor(vendor.criticality))}>
+                        {vendor.criticality}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={cn("text-[10px] font-semibold h-auto py-0.5", getStatusColor(vendor.status))}>
+                        {vendor.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-[12px] text-muted-foreground tabular-nums">
+                       {new Date(vendor.nextReview).getTime() < Date.now() ? (
+                          <span className="text-red-600 font-semibold">Overdue ({formatRelativeTime(vendor.nextReview)})</span>
+                       ) : (
+                          formatRelativeTime(vendor.nextReview)
+                       )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
