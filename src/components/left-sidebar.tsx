@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Crown,
   CreditCard,
   FileCheck2,
   FileClock,
@@ -72,6 +73,12 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
       { icon: AlertTriangle, label: "Incident Reporting", href: "/incidents" },
       { icon: Shield,        label: "Resilience Testing", href: "/resilience" },
       { icon: Building2,     label: "Third-Party Risk",   href: "/third-party-risk" },
+    ],
+  },
+  {
+    title: "Enterprise",
+    items: [
+      { icon: Crown, label: "Manage", href: "/manage" },
     ],
   },
   {
