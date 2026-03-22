@@ -61,10 +61,11 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(result, { status: 201 });
-  } catch (error) {
-    console.error("[POST /api/auth/register] Error:", error);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[POST /api/auth/register] Error:", message, error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", detail: message },
       { status: 500 },
     );
   }
