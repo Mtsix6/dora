@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
     const parsed = RegisterSchema.safeParse(body);
 
     if (!parsed.success) {
+      console.log("[POST /api/auth/register] Zod Error:", parsed.error.flatten().fieldErrors);
       return NextResponse.json(
         { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
         { status: 400 },
