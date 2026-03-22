@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
-import { useSession } from "next-auth/react";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
@@ -14,13 +14,17 @@ import {
   FileCheck2,
   FileText,
   Globe,
+  LayoutDashboard,
   LayoutGrid,
   Lock,
+  LogOut,
+  Settings,
   Shield,
   ShieldCheck,
   Sparkles,
   TrendingUp,
   Upload,
+  User,
   Users,
   Zap,
 } from "lucide-react";
@@ -183,15 +187,7 @@ export default function LandingPage() {
 
           <div className="flex items-center gap-2">
             {isLoggedIn ? (
-              <Link href="/dashboard">
-                <Button
-                  size="sm"
-                  className="h-8 text-[13px] bg-[#635BFF] hover:bg-[#4F46E5] text-white px-4 transition-all duration-200 hover:shadow-lg hover:shadow-[#635BFF]/20"
-                >
-                  Go to Dashboard
-                  <ArrowRight className="size-3.5 ml-1.5" />
-                </Button>
-              </Link>
+              <ProfileDropdown session={session} />
             ) : (
               <>
                 <Link href="/login">
@@ -837,3 +833,90 @@ const STEPS = [
     description: "Your compliance team reviews flagged fields in the split-view, approves, and the record is pushed to your DORA register.",
   },
 ];
+
+/* ── Profile Dropdown (logged-in navbar) ──────────────────────────── */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function ProfileDropdown({ session }: { session: any }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const name = session?.user?.name || session?.user?.email || "User";
+  const initials = name
+    .split(" ")
+    .map((w: string) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const items = [
+    { icon: User, label: "Profile", href: "/settings" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+    { icon: Settings, label: "Settings", href: "/settings" },
+  ];
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="size-8 rounded-full bg-gradient-to-br from-[#635BFF] to-[#4F46E5] flex items-center justify-center text-white text-[11px] font-bold select-none cursor-pointer hover:scale-110 hover:shadow-[0_4px_12px_rgba(99,91,255,0.4)] active:scale-95 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+      >
+        {initials}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-[#E3E8EF] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] overflow-hidden z-50"
+          >
+            {/* User info header */}
+            <div className="px-3.5 py-3 border-b border-[#E3E8EF]">
+              <p className="text-[13px] font-semibold text-[#0A2540] truncate">{name}</p>
+              <p className="text-[11px] text-muted-foreground truncate">{session?.user?.email}</p>
+            </div>
+
+            {/* Menu items */}
+            <div className="py-1.5">
+              {items.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3.5 py-2 text-[13px] text-[#374151] hover:bg-[#F6F9FC] hover:text-[#0A2540] transition-colors duration-150"
+                >
+                  <item.icon className="size-3.5 text-muted-foreground" />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Log out */}
+            <div className="border-t border-[#E3E8EF] py-1.5">
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] text-red-600 hover:bg-red-50 transition-colors duration-150"
+              >
+                <LogOut className="size-3.5" />
+                Log out
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

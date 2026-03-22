@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Bell, Lock } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AppShell } from "@/components/app-shell";
@@ -75,44 +75,6 @@ export function ComingSoonPage({
                   <ArrowRight className="size-3.5 ml-1.5" />
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                className="h-9 px-5 text-[12px] font-semibold border-[#E3E8EF]"
-              >
-                <Bell className="size-3.5 mr-1.5" />
-                Notify me when ready
-              </Button>
-            </div>
-
-            {/* Mock preview skeleton */}
-            <div className="mt-10 rounded-xl border border-[#E3E8EF] bg-white p-4 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="h-2 w-24 bg-[#E3E8EF] rounded-full" />
-                <div className="flex-1" />
-                <div className="h-2 w-12 bg-[#635BFF]/20 rounded-full" />
-              </div>
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 rounded-lg border border-[#E3E8EF]/60 p-2.5"
-                  >
-                    <div className="size-6 rounded bg-[#F6F9FC] flex-shrink-0" />
-                    <div className="flex-1 space-y-1">
-                      <div
-                        className="h-1.5 bg-[#E3E8EF] rounded-full"
-                        style={{ width: `${70 - i * 15}%` }}
-                      />
-                      <div
-                        className="h-1.5 bg-[#F6F9FC] rounded-full"
-                        style={{ width: `${50 - i * 10}%` }}
-                      />
-                    </div>
-                    <div className="h-4 w-12 bg-[#F6F9FC] rounded-full" />
-                  </div>
-                ))}
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent rounded-xl pointer-events-none" />
             </div>
           </motion.div>
         </div>

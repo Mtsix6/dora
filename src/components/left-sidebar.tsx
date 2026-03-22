@@ -6,20 +6,24 @@ import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   AlertTriangle,
   BarChart3,
   BookOpen,
   Building2,
   ChevronDown,
+  ChevronUp,
   Clock,
+  CreditCard,
   FileCheck2,
   FileClock,
   Files,
   GitBranch,
   Home,
+  Settings,
   Shield,
+  Users,
   Zap,
 } from "lucide-react";
 import { EASE_OUT_EXPO } from "@/lib/motion";
@@ -50,15 +54,14 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
       {
         icon: Files,
         label: "Contracts",
-        badge: 47,
         subItems: [
           { label: "All Contracts",   href: "/contracts" },
           { label: "Vendors",         href: "/contracts" },
           { label: "Third-Party ICT", href: "/contracts" },
         ],
       },
-      { icon: FileCheck2, label: "Extractions", href: "/extraction", badge: 3 },
-      { icon: FileClock,  label: "In Review",   href: "/review",     badge: 7 },
+      { icon: FileCheck2, label: "Extractions", href: "/extraction" },
+      { icon: FileClock,  label: "In Review",   href: "/review" },
       { icon: GitBranch,  label: "Register",    href: "/register" },
     ],
   },
@@ -66,7 +69,7 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
     title: "DORA Pillars",
     items: [
       { icon: Zap,           label: "ICT Risk Mgmt",      href: "/ict-risk" },
-      { icon: AlertTriangle, label: "Incident Reporting", href: "/incidents",      badge: 2 },
+      { icon: AlertTriangle, label: "Incident Reporting", href: "/incidents" },
       { icon: Shield,        label: "Resilience Testing", href: "/resilience" },
       { icon: Building2,     label: "Third-Party Risk",   href: "/third-party-risk" },
     ],
@@ -113,18 +116,8 @@ export function LeftSidebar() {
         ))}
       </div>
 
-      {/* Bottom org section */}
-      <div className="border-t border-[#E3E8EF] p-2">
-        <button className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[#F6F9FC] transition-all duration-150 group active:scale-[0.98]">
-          <div className="size-5 rounded bg-[#0A2540] flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
-            <Building2 className="size-3 text-white" />
-          </div>
-          <span className="text-[12px] font-medium text-[#0A2540] truncate flex-1 text-left">
-            {workspaceName}
-          </span>
-          <ChevronDown className="size-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-y-0.5" />
-        </button>
-      </div>
+      {/* Bottom org section with drop-up */}
+      <WorkspaceDropUp workspaceName={workspaceName} />
     </motion.aside>
   );
 }
@@ -270,6 +263,79 @@ function NavEntry({
                   </motion.div>
                 );
               })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function WorkspaceDropUp({ workspaceName }: { workspaceName: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const items = [
+    { icon: Settings, label: "Workspace Settings", href: "/settings/workspace" },
+    { icon: Users, label: "Team Members", href: "/settings/workspace" },
+    { icon: CreditCard, label: "Billing & Plans", href: "/pricing" },
+  ];
+
+  return (
+    <div ref={ref} className="relative border-t border-[#E3E8EF] p-2">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[#F6F9FC] transition-all duration-150 group active:scale-[0.98]"
+      >
+        <div className="size-5 rounded bg-[#0A2540] flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
+          <Building2 className="size-3 text-white" />
+        </div>
+        <span className="text-[12px] font-medium text-[#0A2540] truncate flex-1 text-left">
+          {workspaceName}
+        </span>
+        <ChevronUp className={cn(
+          "size-3 text-muted-foreground transition-all duration-200",
+          open ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+        )} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+            transition={{ duration: 0.18, ease: EASE_OUT_EXPO }}
+            className="absolute bottom-full left-2 right-2 mb-2 rounded-xl border border-[#E3E8EF] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)] overflow-hidden z-50"
+          >
+            {/* Workspace header */}
+            <div className="px-3.5 py-2.5 border-b border-[#E3E8EF]">
+              <p className="text-[12px] font-semibold text-[#0A2540] truncate">{workspaceName}</p>
+              <p className="text-[10px] text-muted-foreground">Manage your workspace</p>
+            </div>
+
+            <div className="py-1">
+              {items.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-[#374151] hover:bg-[#F6F9FC] hover:text-[#0A2540] transition-colors duration-150"
+                >
+                  <item.icon className="size-3.5 text-muted-foreground" />
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </motion.div>
         )}

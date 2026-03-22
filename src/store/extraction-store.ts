@@ -3,35 +3,35 @@
 import { create } from "zustand";
 import type { ExtractionDocument } from "@/types/extraction";
 
-const MOCK_DOCUMENT: ExtractionDocument = {
-  id: "doc-001",
-  filename: "Vendor_SLA_AWS.pdf",
-  status: "review",
-  uploadedAt: new Date().toISOString(),
+const EMPTY_DOCUMENT: ExtractionDocument = {
+  id: "",
+  filename: "",
+  status: "pending",
+  uploadedAt: "",
   fields: {
     entityName: {
-      value: "Amazon Web Services EMEA SARL",
-      confidence: { value: 98, level: "high" },
+      value: "",
+      confidence: { value: 0, level: "low" },
       isEdited: false,
     },
     leiCode: {
-      value: "635400KDMFMRBOIFRR33",
-      confidence: { value: 91, level: "high" },
+      value: "",
+      confidence: { value: 0, level: "low" },
       isEdited: false,
     },
     criticalFunctionTag: {
-      value: "cloud_storage",
-      confidence: { value: 45, level: "medium" },
+      value: "",
+      confidence: { value: 0, level: "low" },
       isEdited: false,
     },
     startDate: {
-      value: "2024-01-01",
-      confidence: { value: 87, level: "high" },
+      value: "",
+      confidence: { value: 0, level: "low" },
       isEdited: false,
     },
     endDate: {
-      value: "2026-12-31",
-      confidence: { value: 32, level: "low" },
+      value: "",
+      confidence: { value: 0, level: "low" },
       isEdited: false,
     },
   },
@@ -42,6 +42,7 @@ interface ExtractionState {
   isSidebarCollapsed: boolean;
   isSaving: boolean;
   savedAt: string | null;
+  setDocument: (doc: ExtractionDocument) => void;
   updateField: <K extends keyof ExtractionDocument["fields"]>(
     field: K,
     value: string
@@ -53,10 +54,12 @@ interface ExtractionState {
 }
 
 export const useExtractionStore = create<ExtractionState>()((set, get) => ({
-  document: MOCK_DOCUMENT,
+  document: EMPTY_DOCUMENT,
   isSidebarCollapsed: false,
   isSaving: false,
   savedAt: null,
+
+  setDocument: (doc) => set({ document: doc }),
 
   updateField: (field, value) => {
     set((state) => ({
@@ -67,7 +70,7 @@ export const useExtractionStore = create<ExtractionState>()((set, get) => ({
           [field]: {
             ...state.document.fields[field],
             value,
-            isEdited: value !== MOCK_DOCUMENT.fields[field].value,
+            isEdited: true,
           },
         },
       },
@@ -89,7 +92,6 @@ export const useExtractionStore = create<ExtractionState>()((set, get) => ({
 
   saveChanges: async () => {
     set({ isSaving: true });
-    // Simulate network latency
     await new Promise((resolve) => setTimeout(resolve, 800));
     set({ isSaving: false, savedAt: new Date().toISOString() });
   },
