@@ -207,10 +207,10 @@ export default function SignupPage() {
                   </label>
                   <Input
                     type="password"
-                    placeholder="Min 8 characters"
+                    placeholder="Min 6 characters"
                     className="h-10 text-[13px] border-[#E3E8EF] bg-[#F6F9FC] focus-visible:ring-[#635BFF]/30 focus-visible:border-[#635BFF]"
                     required
-                    minLength={8}
+                    minLength={6}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}

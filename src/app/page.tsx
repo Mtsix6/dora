@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef } from "react";
+import { useSession } from "next-auth/react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
@@ -132,6 +133,8 @@ const STATS = [
 /* ── Main Landing Page ─────────────────────────────────────────────── */
 
 export default function LandingPage() {
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -179,20 +182,34 @@ export default function LandingPage() {
           <div className="flex-1" />
 
           <div className="flex items-center gap-2">
-            <Link href="/login">
-              <Button variant="ghost" size="sm" className="h-8 text-[13px] transition-all duration-200">
-                Sign in
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button
-                size="sm"
-                className="h-8 text-[13px] bg-[#635BFF] hover:bg-[#4F46E5] text-white px-4 transition-all duration-200 hover:shadow-lg hover:shadow-[#635BFF]/20"
-              >
-                Get started free
-                <ArrowRight className="size-3.5 ml-1.5" />
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard">
+                <Button
+                  size="sm"
+                  className="h-8 text-[13px] bg-[#635BFF] hover:bg-[#4F46E5] text-white px-4 transition-all duration-200 hover:shadow-lg hover:shadow-[#635BFF]/20"
+                >
+                  Go to Dashboard
+                  <ArrowRight className="size-3.5 ml-1.5" />
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm" className="h-8 text-[13px] transition-all duration-200">
+                    Sign in
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button
+                    size="sm"
+                    className="h-8 text-[13px] bg-[#635BFF] hover:bg-[#4F46E5] text-white px-4 transition-all duration-200 hover:shadow-lg hover:shadow-[#635BFF]/20"
+                  >
+                    Get started free
+                    <ArrowRight className="size-3.5 ml-1.5" />
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </motion.nav>
