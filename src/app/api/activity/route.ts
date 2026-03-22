@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.workspaceId) {
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
     take: Math.min(limit, 50),
   });
 
-  const activity = activities.map((a) => ({
+  const activity = activities.map((a: any) => ({
     id: a.id,
     action: a.action,
     user: a.user.name || "System",

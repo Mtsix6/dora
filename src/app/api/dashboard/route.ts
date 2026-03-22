@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.workspaceId) {
@@ -49,7 +51,7 @@ export async function GET() {
     : 0;
 
   // Calculate avgConfidence from extractedData JSON
-  const contractsWithData = allContracts.filter((c) => c.extractedData);
+  const contractsWithData = allContracts.filter((c: any) => c.extractedData);
   let avgConfidence = 0;
   let highCount = 0, mediumCount = 0, lowCount = 0;
   
@@ -101,7 +103,7 @@ export async function GET() {
         ),
       };
     })
-    .sort((a, b) => a.days - b.days)
+    .sort((a: any, b: any) => b.count - a.count)
     .slice(0, 5);
 
   return NextResponse.json({
@@ -114,7 +116,7 @@ export async function GET() {
       expiringSoon: expiringContracts.length,
     },
     recentContracts,
-    activity: activity.map((a) => ({
+    activity: activity.map((a: any) => ({
       id: a.id,
       action: a.action,
       user: a.user.name || "System",

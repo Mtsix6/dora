@@ -23,8 +23,12 @@ import { StatusBadge } from "@/components/status-badge";
 import { UploadDialog } from "@/components/upload-dialog";
 import { cn } from "@/lib/utils";
 import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
+
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -69,7 +73,7 @@ export default async function DashboardPage() {
     take: 5,
   });
 
-  const activity = activities.map((a) => ({
+  const activity = activities.map((a: any) => ({
     id: a.id,
     action: a.action,
     user: a.user.name || "System",
@@ -84,7 +88,7 @@ export default async function DashboardPage() {
     : 0;
 
   // Calculate avgConfidence from extractedData JSON
-  const contractsWithData = allContracts.filter((c) => c.extractedData);
+  const contractsWithData = allContracts.filter((c: any) => c.extractedData);
   let avgConfidence = 0;
   let highCount = 0, mediumCount = 0, lowCount = 0;
   
@@ -118,14 +122,14 @@ export default async function DashboardPage() {
   // Expiring contracts (within 90 days)
   const now = Date.now();
   const expiringContracts = contractsWithData
-    .filter((c) => {
+    .filter((c: any) => {
       const data = c.extractedData as Record<string, { value?: string }>;
       const endDate = data?.endDate?.value;
       if (!endDate) return false;
       const daysLeft = Math.ceil((new Date(endDate).getTime() - now) / 86_400_000);
       return daysLeft >= 0 && daysLeft <= 90;
     })
-    .map((c) => {
+    .map((c: any) => {
       const data = c.extractedData as Record<string, { value?: string }>;
       return {
         id: c.id,
@@ -136,7 +140,7 @@ export default async function DashboardPage() {
         ),
       };
     })
-    .sort((a, b) => a.days - b.days)
+    .sort((a: any, b: any) => a.days - b.days)
     .slice(0, 5);
 
   const stats = {
@@ -288,7 +292,7 @@ export default async function DashboardPage() {
                   No contracts expiring within 90 days
                 </p>
               ) : (
-                expiringContracts.slice(0, 3).map((c) => (
+                expiringContracts.slice(0, 3).map((c: any ) => (
                   <Link key={c.id} href={`/extraction?id=${c.id}`}>
                     <div className="flex items-center gap-3 rounded-lg border border-[#E3E8EF] p-2.5 hover:border-amber-300/50 hover:bg-amber-50/30 transition-all duration-200 cursor-pointer">
                       <div
@@ -340,7 +344,7 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent className="px-4 pb-4">
                 <div className="flex flex-col gap-1">
-                  {recentContracts.map((contract) => (
+                  {recentContracts.map((contract: any) => (
                     <Link key={contract.id} href={`/extraction?id=${contract.id}`}>
                       <div className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-[#F6F9FC] transition-all duration-200 group cursor-pointer">
                         <div className="size-7 rounded-md bg-[#635BFF]/8 flex items-center justify-center flex-shrink-0">
@@ -376,7 +380,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="flex flex-col gap-3">
-                {activity.map((entry, i) => (
+                {activity.map((entry: any, i: number) => (
                   <div key={entry.id} className="flex gap-3">
                     <div className="flex flex-col items-center">
                       <div className="size-5 rounded-full bg-[#635BFF]/10 flex items-center justify-center flex-shrink-0">

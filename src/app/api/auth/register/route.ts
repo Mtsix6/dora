@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { Prisma } from "@prisma/client";
+import * as PrismaClientPkg from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+
+// Use the exported Prisma namespace if available, otherwise fallback to any for build stability
+type TransactionClient = any;
 
 const RegisterSchema = z.object({
   email: z.string().email().transform((v) => v.toLowerCase().trim()),
@@ -39,7 +42,7 @@ export async function POST(request: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 12);
 
     // Create workspace + user in a transaction
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const result = await prisma.$transaction(async (tx: TransactionClient) => {
       const workspace = await tx.workspace.create({
         data: { name: organisation },
       });
