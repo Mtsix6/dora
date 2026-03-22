@@ -9,6 +9,7 @@ export default function LibraryPage() {
       title="Regulatory Library"
       description="Searchable library of DORA regulation text, EBA/ESMA/EIOPA guidelines, RTS, and ITS documentation."
       icon={BookOpen}
+      requiredTier="PRO"
     />
   );
 }
