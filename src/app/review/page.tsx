@@ -1,0 +1,15 @@
+import type { Metadata } from "next";
+import { FileClock } from "lucide-react";
+import { ComingSoonPage } from "@/components/coming-soon";
+
+export const metadata: Metadata = { title: "In Review" };
+
+export default function ReviewPage() {
+  return (
+    <ComingSoonPage
+      title="In Review"
+      description="Documents awaiting compliance officer review, prioritised by confidence score and urgency."
+      icon={FileClock}
+    />
+  );
+}

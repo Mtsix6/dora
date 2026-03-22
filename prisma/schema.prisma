@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ────────────────────────────────────────────
+// Enums
+// ────────────────────────────────────────────
+
+enum WorkspaceTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum ContractStatus {
+  PENDING
+  PROCESSING
+  EXTRACTED
+  FAILED
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+// ────────────────────────────────────────────
+// Models
+// ────────────────────────────────────────────
+
+model Workspace {
+  id               String        @id @default(cuid())
+  name             String
+  tier             WorkspaceTier @default(FREE)
+  stripeCustomerId String?       @unique @map("stripe_customer_id")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  users         User[]
+  contracts     Contract[]
+  activities    Activity[]
+  subscriptions Subscription[]
+
+  @@map("workspaces")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  image        String?
+  passwordHash String?  @map("password_hash")
+  role         UserRole @default(MEMBER)
+  workspaceId  String   @map("workspace_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contracts  Contract[]
+  activities Activity[]
+
+  @@index([workspaceId])
+  @@map("users")
+}
+
+model Contract {
+  id            String         @id @default(cuid())
+  fileName      String         @map("file_name")
+  fileUrl       String         @map("file_url")
+  mimeType      String         @map("mime_type")
+  status        ContractStatus @default(PENDING)
+  extractedData Json?          @map("extracted_data")
+  uploadedById  String         @map("uploaded_by_id")
+  workspaceId   String         @map("workspace_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  uploadedBy User      @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  activities Activity[]
+
+  @@index([workspaceId])
+  @@index([status])
+  @@map("contracts")
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  action      String
+  userId      String   @map("user_id")
+  contractId  String?  @map("contract_id")
+  workspaceId String   @map("workspace_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contract  Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([createdAt])
+  @@map("activities")
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  workspaceId          String             @map("workspace_id")
+  stripeSubscriptionId String             @unique @map("stripe_subscription_id")
+  stripePriceId        String             @map("stripe_price_id")
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd     DateTime           @map("current_period_end")
+  cancelAtPeriodEnd    Boolean            @default(false) @map("cancel_at_period_end")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("subscriptions")
+}
