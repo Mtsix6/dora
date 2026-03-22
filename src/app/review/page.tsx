@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import { FileClock } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
-
-export const metadata: Metadata = { title: "In Review" };
 
 export default function ReviewPage() {
   return (

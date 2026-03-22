@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Check,
@@ -11,8 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { EASE_OUT_EXPO, fadeUp, staggerContainer } from "@/lib/motion";
 
-export const metadata: Metadata = { title: "Pricing" };
+// metadata moved to layout or handled by Next.js
 
 const PLANS = [
   {
@@ -111,7 +114,13 @@ export default function PricingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
+      <motion.section
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+        className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center"
+      >
+        <motion.div variants={fadeUp}>
         <Badge
           variant="outline"
           className="mb-6 border-[#635BFF]/30 text-[#635BFF] bg-[#635BFF]/5 font-semibold text-[11px] px-3 py-1 rounded-full"
@@ -119,27 +128,35 @@ export default function PricingPage() {
           <Sparkles className="size-3 mr-1.5" />
           14-day free trial on Pro · No credit card required
         </Badge>
-        <h1 className="text-4xl md:text-5xl font-bold text-[#0A2540] leading-tight tracking-tight">
+        </motion.div>
+        <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl font-bold text-[#0A2540] leading-tight tracking-tight">
           Simple pricing for{" "}
           <span className="text-[#635BFF]">every stage</span> of compliance
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
+        </motion.h1>
+        <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
           Start free, upgrade when you need unlimited extractions and team
           collaboration. No hidden fees.
-        </p>
-      </section>
+        </motion.p>
+      </motion.section>
 
       {/* Pricing grid */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
-        <div className="grid md:grid-cols-3 gap-6">
-          {PLANS.map((plan) => (
-            <div
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1, delayChildren: 0.3 } } }}
+          className="grid md:grid-cols-3 gap-6"
+        >
+          {PLANS.map((plan, planIdx) => (
+            <motion.div
               key={plan.name}
+              variants={fadeUp}
+              custom={planIdx}
               className={cn(
-                "relative rounded-2xl border p-6 flex flex-col transition-all",
+                "relative rounded-2xl border p-6 flex flex-col transition-all duration-300",
                 plan.highlight
-                  ? "border-[#635BFF] bg-gradient-to-b from-[#635BFF]/[0.03] to-white shadow-[0_4px_24px_rgba(99,91,255,0.12)] scale-[1.02]"
-                  : "border-[#E3E8EF] bg-white hover:border-[#635BFF]/30 hover:shadow-sm"
+                  ? "border-[#635BFF] bg-gradient-to-b from-[#635BFF]/[0.03] to-white shadow-[0_4px_24px_rgba(99,91,255,0.12)] scale-[1.02] hover:shadow-[0_8px_32px_rgba(99,91,255,0.18)]"
+                  : "border-[#E3E8EF] bg-white hover:border-[#635BFF]/30 hover:shadow-md hover:-translate-y-1"
               )}
             >
               {plan.badge && (
@@ -170,7 +187,7 @@ export default function PricingPage() {
               <Link href={plan.ctaHref} className="block">
                 <Button
                   className={cn(
-                    "w-full h-10 text-[13px] font-semibold",
+                    "w-full h-10 text-[13px] font-semibold btn-lift",
                     plan.highlight
                       ? "bg-[#635BFF] hover:bg-[#4F46E5] text-white"
                       : "bg-white border border-[#E3E8EF] text-[#0A2540] hover:bg-[#F6F9FC] hover:border-[#635BFF]/30"
@@ -191,9 +208,9 @@ export default function PricingPage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       {/* Trust section */}

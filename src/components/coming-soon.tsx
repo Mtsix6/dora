@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ArrowRight, Bell, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AppShell } from "@/components/app-shell";
+import { EASE_OUT_EXPO } from "@/lib/motion";
 
 interface ComingSoonPageProps {
   title: string;
@@ -41,10 +45,20 @@ export function ComingSoonPage({
 
         {/* Empty state card */}
         <div className="flex-1 flex items-center justify-center">
-          <div className="max-w-md text-center">
-            <div className="mx-auto size-16 rounded-2xl bg-gradient-to-br from-[#635BFF]/10 to-[#635BFF]/5 border border-[#635BFF]/10 flex items-center justify-center mb-5">
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, ease: EASE_OUT_EXPO, delay: 0.1 }}
+            className="max-w-md text-center"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: EASE_OUT_EXPO, delay: 0.25 }}
+              className="mx-auto size-16 rounded-2xl bg-gradient-to-br from-[#635BFF]/10 to-[#635BFF]/5 border border-[#635BFF]/10 flex items-center justify-center mb-5"
+            >
               <Icon className="size-7 text-[#635BFF]" />
-            </div>
+            </motion.div>
 
             <h2 className="text-lg font-bold text-[#0A2540] tracking-tight">
               Upgrade to unlock {title}
@@ -56,7 +70,7 @@ export function ComingSoonPage({
 
             <div className="mt-6 flex flex-col sm:flex-row gap-2 justify-center">
               <Link href="/pricing">
-                <Button className="h-9 px-5 text-[12px] font-semibold bg-[#635BFF] hover:bg-[#4F46E5] text-white">
+                <Button className="h-9 px-5 text-[12px] font-semibold bg-[#635BFF] hover:bg-[#4F46E5] text-white btn-lift">
                   View plans
                   <ArrowRight className="size-3.5 ml-1.5" />
                 </Button>
@@ -100,7 +114,7 @@ export function ComingSoonPage({
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent rounded-xl pointer-events-none" />
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </AppShell>

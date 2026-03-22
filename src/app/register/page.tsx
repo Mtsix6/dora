@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import { GitBranch } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
-
-export const metadata: Metadata = { title: "Register" };
 
 export default function RegisterPage() {
   return (

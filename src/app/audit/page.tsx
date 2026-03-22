@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Clock } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
-
-export const metadata: Metadata = { title: "Audit Log" };
 
 export default function AuditPage() {
   return (

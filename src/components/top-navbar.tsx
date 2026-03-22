@@ -54,7 +54,7 @@ const BREADCRUMB_MAP: Record<string, { label: string; href: string }[]> = {
 };
 
 const iconBtnClass =
-  "h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-[#F6F9FC] transition-all duration-200 hover:scale-105 active:scale-95";
+  "h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-[#F6F9FC] icon-btn";
 
 export function TopNavbar() {
   const { document, isSidebarCollapsed, toggleSidebar, savedAt } =
@@ -155,7 +155,7 @@ export function TopNavbar() {
             }
           >
             <Bell className="size-4" />
-            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-[#635BFF]" />
+            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-[#635BFF] dot-pulse" />
           </TooltipTrigger>
           <TooltipContent side="bottom">Notifications (3)</TooltipContent>
         </Tooltip>

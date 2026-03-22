@@ -271,7 +271,7 @@ export function UploadDialog() {
             </Button>
             <Button
               size="sm"
-              className="h-8 text-[12px] bg-[#635BFF] hover:bg-[#4F46E5] text-white"
+              className="h-8 text-[12px] bg-[#635BFF] hover:bg-[#4F46E5] text-white btn-lift"
               disabled={queuedCount === 0 || isUploading}
               onClick={handleUpload}
             >

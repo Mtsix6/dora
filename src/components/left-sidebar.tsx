@@ -132,7 +132,7 @@ function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {
       <Link
         href={item.href}
         className={cn(
-          "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors group",
+          "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] nav-item group",
           isActive
             ? "bg-[#635BFF]/8 text-[#635BFF] font-medium"
             : "text-[#374151] hover:bg-[#F6F9FC] hover:text-[#0A2540]"
@@ -166,7 +166,7 @@ function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {
       <button
         onClick={() => setIsOpen((o) => !o)}
         className={cn(
-          "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors group",
+          "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] nav-item group",
           isActive
             ? "bg-[#635BFF]/8 text-[#635BFF] font-medium"
             : "text-[#374151] hover:bg-[#F6F9FC] hover:text-[#0A2540]"
@@ -192,25 +192,29 @@ function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {
         />
       </button>
 
-      {item.subItems && isOpen && (
-        <div className="ml-5 mt-0.5 flex flex-col gap-0.5 border-l border-[#E3E8EF] pl-2">
-          {item.subItems.map((sub) => {
-            const subActive = pathname === sub.href;
-            return (
-              <Link
-                key={sub.label}
-                href={sub.href}
-                className={cn(
-                  "w-full text-left px-2 py-1 text-[12px] rounded-md transition-colors",
-                  subActive
-                    ? "text-[#635BFF] font-medium bg-[#635BFF]/5"
-                    : "text-muted-foreground hover:text-[#0A2540] hover:bg-[#F6F9FC]"
-                )}
-              >
-                {sub.label}
-              </Link>
-            );
-          })}
+      {item.subItems && (
+        <div className="collapse-section" data-open={isOpen}>
+          <div>
+            <div className="ml-5 mt-0.5 flex flex-col gap-0.5 border-l border-[#E3E8EF] pl-2">
+              {item.subItems.map((sub) => {
+                const subActive = pathname === sub.href;
+                return (
+                  <Link
+                    key={sub.label}
+                    href={sub.href}
+                    className={cn(
+                      "w-full text-left px-2 py-1 text-[12px] rounded-md transition-all duration-150",
+                      subActive
+                        ? "text-[#635BFF] font-medium bg-[#635BFF]/5"
+                        : "text-muted-foreground hover:text-[#0A2540] hover:bg-[#F6F9FC] hover:translate-x-0.5"
+                    )}
+                  >
+                    {sub.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>

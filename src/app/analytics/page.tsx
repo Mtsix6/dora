@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import { BarChart3 } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
-
-export const metadata: Metadata = { title: "Analytics" };
 
 export default function AnalyticsPage() {
   return (

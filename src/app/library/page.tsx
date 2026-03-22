@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import { BookOpen } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
-
-export const metadata: Metadata = { title: "Regulatory Library" };
 
 export default function LibraryPage() {
   return (

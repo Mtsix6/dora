@@ -192,7 +192,7 @@ export default async function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-6 p-6 overflow-y-auto h-full page-transition">
+      <div className="flex flex-col gap-6 p-6 overflow-y-auto h-full">
         {/* Page header */}
         <div className="flex items-start justify-between">
           <div>
@@ -204,7 +204,7 @@ export default async function DashboardPage() {
           <div className="flex gap-2">
             <UploadDialog />
             <Link href="/extraction">
-              <Button className="h-8 text-[12px] bg-[#635BFF] hover:bg-[#4F46E5] text-white transition-all duration-200 hover:shadow-md hover:shadow-[#635BFF]/20">
+              <Button className="h-8 text-[12px] bg-[#635BFF] hover:bg-[#4F46E5] text-white btn-lift">
                 <Bot className="size-3.5 mr-1.5" />
                 New extraction
               </Button>
@@ -260,7 +260,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="h-1.5 rounded-full bg-[#F6F9FC] overflow-hidden">
                     <div
-                      className={cn("h-full rounded-full transition-all duration-700 ease-out", row.color)}
+                      className={cn("h-full rounded-full progress-fill", row.color)}
                       style={{ width: `${row.pct}%` }}
                     />
                   </div>
@@ -424,7 +424,7 @@ export default async function DashboardPage() {
               </p>
             </div>
             <Link href="/contracts">
-              <Button size="sm" className="h-8 text-[12px] bg-[#635BFF] hover:bg-[#4F46E5] text-white flex-shrink-0 transition-all duration-200 hover:shadow-md hover:shadow-[#635BFF]/20">
+              <Button size="sm" className="h-8 text-[12px] bg-[#635BFF] hover:bg-[#4F46E5] text-white flex-shrink-0 btn-lift">
                 Complete register <ArrowRight className="size-3.5 ml-1.5" />
               </Button>
             </Link>

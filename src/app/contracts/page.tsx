@@ -168,7 +168,7 @@ export default function ContractsPage() {
                 return (
                   <TableRow
                     key={contract.id}
-                    className="border-[#E3E8EF] hover:bg-[#F6F9FC] cursor-pointer group transition-colors"
+                    className="border-[#E3E8EF] cursor-pointer group row-hover"
                   >
                     <TableCell className="pl-4 py-2.5">
                       <div className="flex items-center gap-2">

@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Zap } from "lucide-react";
 import { ComingSoonPage } from "@/components/coming-soon";
-
-export const metadata: Metadata = { title: "ICT Risk Management" };
 
 export default function IctRiskPage() {
   return (
@@ -10,7 +9,7 @@ export default function IctRiskPage() {
       title="ICT Risk Management"
       description="Risk identification, protection, detection, response, and recovery framework management."
       icon={Zap}
-      article="DORA Art. 5–16"
+      article="DORA Art. 5-16"
     />
   );
 }

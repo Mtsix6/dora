@@ -4,9 +4,11 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { ArrowRight, LayoutGrid, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EASE_OUT_EXPO } from "@/lib/motion";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,7 +40,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#F6F9FC] flex flex-col">
       {/* Minimal header */}
-      <nav className="h-14 flex items-center px-6">
+      <motion.nav
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
+        className="h-14 flex items-center px-6"
+      >
         <Link href="/" className="flex items-center gap-2 select-none">
           <div className="size-6 rounded-md bg-[#635BFF] flex items-center justify-center">
             <LayoutGrid className="size-3.5 text-white" strokeWidth={2.5} />
@@ -47,11 +54,16 @@ export default function LoginPage() {
             DORA<span className="text-[#635BFF]">·</span>RoI
           </span>
         </Link>
-      </nav>
+      </motion.nav>
 
       {/* Auth card */}
       <div className="flex-1 flex items-center justify-center px-6 pb-16">
-        <div className="w-full max-w-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: EASE_OUT_EXPO, delay: 0.1 }}
+          className="w-full max-w-sm"
+        >
           <div className="bg-white rounded-2xl border border-[#E3E8EF] shadow-[0_4px_24px_rgba(10,37,64,0.06)] p-8">
             <h1 className="text-xl font-bold text-[#0A2540] tracking-tight">
               Welcome back
@@ -61,9 +73,14 @@ export default function LoginPage() {
             </p>
 
             {error && (
-              <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-[13px] text-red-700 font-medium">
+              <motion.div
+                initial={{ opacity: 0, y: -4, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                transition={{ duration: 0.25, ease: EASE_OUT_EXPO }}
+                className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-[13px] text-red-700 font-medium"
+              >
                 {error}
-              </div>
+              </motion.div>
             )}
 
             <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
@@ -107,7 +124,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-10 text-[13px] font-semibold bg-[#635BFF] hover:bg-[#4F46E5] text-white mt-1"
+                className="w-full h-10 text-[13px] font-semibold bg-[#635BFF] hover:bg-[#4F46E5] text-white mt-1 btn-lift"
                 disabled={loading}
               >
                 {loading ? (
@@ -125,7 +142,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-                className="w-full h-10 rounded-lg border border-[#E3E8EF] bg-white hover:bg-[#F6F9FC] text-[13px] font-medium text-[#0A2540] transition-colors flex items-center justify-center gap-2"
+                className="w-full h-10 rounded-lg border border-[#E3E8EF] bg-white hover:bg-[#F6F9FC] hover:border-[#635BFF]/30 text-[13px] font-medium text-[#0A2540] transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <svg className="size-4" viewBox="0 0 24 24">
                   <path
@@ -159,7 +176,7 @@ export default function LoginPage() {
               Sign up free
             </Link>
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

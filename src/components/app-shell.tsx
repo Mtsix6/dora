@@ -2,6 +2,7 @@
 
 import { TopNavbar } from "@/components/top-navbar";
 import { LeftSidebar } from "@/components/left-sidebar";
+import { PageTransition } from "@/lib/motion";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -15,7 +16,9 @@ export function AppShell({ children, noPad = false }: AppShellProps) {
       <TopNavbar />
       <div className="flex flex-1 min-h-0">
         <LeftSidebar />
-        <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
+        <main className="flex-1 min-w-0 overflow-hidden">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   );
