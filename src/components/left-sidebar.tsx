@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useExtractionStore } from "@/store/extraction-store";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -20,6 +21,7 @@ import {
   Shield,
   Zap,
 } from "lucide-react";
+import { EASE_OUT_EXPO } from "@/lib/motion";
 
 interface NavSubItem {
   label: string;
@@ -37,8 +39,8 @@ interface NavItem {
 const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
   {
     items: [
-      { icon: Home, label: "Dashboard", href: "/dashboard" },
-      { icon: BarChart3, label: "Analytics", href: "/analytics" },
+      { icon: Home,    label: "Dashboard", href: "/dashboard" },
+      { icon: BarChart3, label: "Analytics",  href: "/analytics" },
     ],
   },
   {
@@ -49,30 +51,30 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
         label: "Contracts",
         badge: 47,
         subItems: [
-          { label: "All Contracts", href: "/contracts" },
-          { label: "Vendors", href: "/contracts" },
+          { label: "All Contracts",   href: "/contracts" },
+          { label: "Vendors",         href: "/contracts" },
           { label: "Third-Party ICT", href: "/contracts" },
         ],
       },
       { icon: FileCheck2, label: "Extractions", href: "/extraction", badge: 3 },
-      { icon: FileClock, label: "In Review", href: "/review", badge: 7 },
-      { icon: GitBranch, label: "Register", href: "/register" },
+      { icon: FileClock,  label: "In Review",   href: "/review",     badge: 7 },
+      { icon: GitBranch,  label: "Register",    href: "/register" },
     ],
   },
   {
     title: "DORA Pillars",
     items: [
-      { icon: Zap, label: "ICT Risk Mgmt", href: "/ict-risk" },
-      { icon: AlertTriangle, label: "Incident Reporting", href: "/incidents", badge: 2 },
-      { icon: Shield, label: "Resilience Testing", href: "/resilience" },
-      { icon: Building2, label: "Third-Party Risk", href: "/third-party-risk" },
+      { icon: Zap,           label: "ICT Risk Mgmt",      href: "/ict-risk" },
+      { icon: AlertTriangle, label: "Incident Reporting", href: "/incidents",      badge: 2 },
+      { icon: Shield,        label: "Resilience Testing", href: "/resilience" },
+      { icon: Building2,     label: "Third-Party Risk",   href: "/third-party-risk" },
     ],
   },
   {
     title: "Resources",
     items: [
       { icon: BookOpen, label: "Regulatory Library", href: "/library" },
-      { icon: Clock, label: "Audit Log", href: "/audit" },
+      { icon: Clock,    label: "Audit Log",          href: "/audit" },
     ],
   },
 ];
@@ -82,12 +84,16 @@ export function LeftSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside
-      className={cn(
-        "flex-shrink-0 flex flex-col border-r border-[#E3E8EF] bg-white overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        isSidebarCollapsed ? "w-0 opacity-0 pointer-events-none -translate-x-2" : "w-56 opacity-100 translate-x-0"
-      )}
+    <motion.aside
+      animate={{
+        width: isSidebarCollapsed ? 0 : 224,
+        opacity: isSidebarCollapsed ? 0 : 1,
+        x: isSidebarCollapsed ? -8 : 0,
+      }}
+      transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
+      className="flex-shrink-0 flex flex-col border-r border-[#E3E8EF] bg-white overflow-hidden"
       aria-hidden={isSidebarCollapsed}
+      style={{ pointerEvents: isSidebarCollapsed ? "none" : "auto" }}
     >
       <div className="flex flex-col gap-0.5 p-2 pt-3 overflow-y-auto flex-1 min-w-56">
         {NAV_SECTIONS.map((section, si) => (
@@ -97,8 +103,8 @@ export function LeftSidebar() {
                 {section.title}
               </p>
             )}
-            {section.items.map((item) => (
-              <NavEntry key={item.label} item={item} pathname={pathname} />
+            {section.items.map((item, ii) => (
+              <NavEntry key={item.label} item={item} pathname={pathname} index={ii} />
             ))}
           </div>
         ))}
@@ -106,21 +112,29 @@ export function LeftSidebar() {
 
       {/* Bottom org section */}
       <div className="border-t border-[#E3E8EF] p-2">
-        <button className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[#F6F9FC] transition-colors group">
-          <div className="size-5 rounded bg-[#0A2540] flex items-center justify-center flex-shrink-0">
+        <button className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[#F6F9FC] transition-all duration-150 group active:scale-[0.98]">
+          <div className="size-5 rounded bg-[#0A2540] flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
             <Building2 className="size-3 text-white" />
           </div>
           <span className="text-[12px] font-medium text-[#0A2540] truncate flex-1 text-left">
             Acme Bank plc
           </span>
-          <ChevronDown className="size-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ChevronDown className="size-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-y-0.5" />
         </button>
       </div>
-    </aside>
+    </motion.aside>
   );
 }
 
-function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {
+function NavEntry({
+  item,
+  pathname,
+  index,
+}: {
+  item: NavItem;
+  pathname: string;
+  index: number;
+}) {
   const Icon = item.icon;
   const isActive = item.href
     ? pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
@@ -132,23 +146,38 @@ function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {
       <Link
         href={item.href}
         className={cn(
-          "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] nav-item group",
+          "relative w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] group",
+          "transition-colors duration-[120ms] ease-out",
           isActive
-            ? "bg-[#635BFF]/8 text-[#635BFF] font-medium"
-            : "text-[#374151] hover:bg-[#F6F9FC] hover:text-[#0A2540]"
+            ? "text-[#635BFF] font-medium"
+            : "text-[#374151] hover:text-[#0A2540]"
         )}
       >
+        {/* Sliding active background */}
+        {isActive && (
+          <motion.span
+            layoutId="nav-active-bg"
+            className="absolute inset-0 rounded-md bg-[#635BFF]/8"
+            transition={{ duration: 0.28, ease: EASE_OUT_EXPO }}
+          />
+        )}
+
+        {/* Hover background (only when not active) */}
+        {!isActive && (
+          <span className="absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 bg-[#F6F9FC] transition-opacity duration-[120ms]" />
+        )}
+
         <Icon
           className={cn(
-            "size-3.5 flex-shrink-0",
+            "relative size-3.5 flex-shrink-0 transition-colors duration-[120ms]",
             isActive ? "text-[#635BFF]" : "text-muted-foreground group-hover:text-[#0A2540]"
           )}
         />
-        <span className="flex-1 text-left truncate">{item.label}</span>
+        <span className="relative flex-1 text-left truncate">{item.label}</span>
         {item.badge !== undefined && (
           <span
             className={cn(
-              "text-[10px] font-semibold tabular-nums rounded-full px-1.5 py-0.5 leading-none",
+              "relative text-[10px] font-semibold tabular-nums rounded-full px-1.5 py-0.5 leading-none transition-colors duration-[120ms]",
               isActive
                 ? "bg-[#635BFF]/15 text-[#635BFF]"
                 : "bg-[#F6F9FC] border border-[#E3E8EF] text-muted-foreground"
@@ -166,57 +195,82 @@ function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {
       <button
         onClick={() => setIsOpen((o) => !o)}
         className={cn(
-          "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] nav-item group",
+          "relative w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] group",
+          "transition-colors duration-[120ms] ease-out",
           isActive
-            ? "bg-[#635BFF]/8 text-[#635BFF] font-medium"
-            : "text-[#374151] hover:bg-[#F6F9FC] hover:text-[#0A2540]"
+            ? "text-[#635BFF] font-medium"
+            : "text-[#374151] hover:text-[#0A2540]"
         )}
       >
+        {isActive && (
+          <motion.span
+            layoutId="nav-active-bg"
+            className="absolute inset-0 rounded-md bg-[#635BFF]/8"
+            transition={{ duration: 0.28, ease: EASE_OUT_EXPO }}
+          />
+        )}
+        {!isActive && (
+          <span className="absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 bg-[#F6F9FC] transition-opacity duration-[120ms]" />
+        )}
+
         <Icon
           className={cn(
-            "size-3.5 flex-shrink-0",
+            "relative size-3.5 flex-shrink-0 transition-colors duration-[120ms]",
             isActive ? "text-[#635BFF]" : "text-muted-foreground group-hover:text-[#0A2540]"
           )}
         />
-        <span className="flex-1 text-left truncate">{item.label}</span>
+        <span className="relative flex-1 text-left truncate">{item.label}</span>
         {item.badge !== undefined && (
-          <span className="text-[10px] font-semibold tabular-nums rounded-full bg-[#F6F9FC] border border-[#E3E8EF] px-1.5 py-0.5 leading-none text-muted-foreground">
+          <span className="relative text-[10px] font-semibold tabular-nums rounded-full bg-[#F6F9FC] border border-[#E3E8EF] px-1.5 py-0.5 leading-none text-muted-foreground">
             {item.badge}
           </span>
         )}
-        <ChevronDown
-          className={cn(
-            "size-3 text-muted-foreground transition-transform duration-150",
-            isOpen && "rotate-180"
-          )}
-        />
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.22, ease: EASE_OUT_EXPO }}
+          className="relative"
+        >
+          <ChevronDown className="size-3 text-muted-foreground" />
+        </motion.div>
       </button>
 
-      {item.subItems && (
-        <div className="collapse-section" data-open={isOpen}>
-          <div>
-            <div className="ml-5 mt-0.5 flex flex-col gap-0.5 border-l border-[#E3E8EF] pl-2">
-              {item.subItems.map((sub) => {
+      <AnimatePresence initial={false}>
+        {isOpen && item.subItems && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.26, ease: EASE_OUT_EXPO }}
+            style={{ overflow: "hidden" }}
+          >
+            <div className="ml-5 mt-0.5 flex flex-col gap-0.5 border-l border-[#E3E8EF] pl-2 pb-1">
+              {item.subItems.map((sub, i) => {
                 const subActive = pathname === sub.href;
                 return (
-                  <Link
+                  <motion.div
                     key={sub.label}
-                    href={sub.href}
-                    className={cn(
-                      "w-full text-left px-2 py-1 text-[12px] rounded-md transition-all duration-150",
-                      subActive
-                        ? "text-[#635BFF] font-medium bg-[#635BFF]/5"
-                        : "text-muted-foreground hover:text-[#0A2540] hover:bg-[#F6F9FC] hover:translate-x-0.5"
-                    )}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, ease: EASE_OUT_EXPO, delay: i * 0.04 }}
                   >
-                    {sub.label}
-                  </Link>
+                    <Link
+                      href={sub.href}
+                      className={cn(
+                        "block w-full text-left px-2 py-1 text-[12px] rounded-md transition-all duration-[120ms]",
+                        subActive
+                          ? "text-[#635BFF] font-medium bg-[#635BFF]/5"
+                          : "text-muted-foreground hover:text-[#0A2540] hover:bg-[#F6F9FC] hover:translate-x-0.5"
+                      )}
+                    >
+                      {sub.label}
+                    </Link>
+                  </motion.div>
                 );
               })}
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
