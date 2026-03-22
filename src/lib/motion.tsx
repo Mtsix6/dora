@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, type Variants } from "framer-motion";
+import { motion, useInView, type Variants, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
 
@@ -9,10 +9,12 @@ import { useRef } from "react";
 export const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 export const EASE_OUT_QUART: [number, number, number, number] = [0.25, 1, 0.5, 1];
 export const EASE_OUT_BACK: [number, number, number, number] = [0.34, 1.56, 0.64, 1];
+export const EASE_IN_OUT: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
 export const SPRING_SNAPPY = { type: "spring", stiffness: 500, damping: 38 } as const;
 export const SPRING_SMOOTH = { type: "spring", stiffness: 300, damping: 30 } as const;
 export const SPRING_BOUNCY = { type: "spring", stiffness: 380, damping: 22 } as const;
+export const SPRING_GENTLE = { type: "spring", stiffness: 200, damping: 26 } as const;
 
 /* ── Reusable animation variants ─────────────────────────────────────── */
 
@@ -100,21 +102,56 @@ export const staggerContainer: Variants = {
   },
 };
 
+/** Slide up from bottom — modals, sheets, overlays */
+export const slideUp: Variants = {
+  hidden: { opacity: 0, y: 24, scale: 0.97 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.35, ease: EASE_OUT_EXPO },
+  },
+  exit: {
+    opacity: 0,
+    y: 12,
+    scale: 0.98,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
+
+/** Tab content — smooth crossfade with subtle slide */
+export const tabContent: Variants = {
+  hidden: { opacity: 0, y: 6 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.25, ease: EASE_OUT_EXPO },
+  },
+  exit: {
+    opacity: 0,
+    y: -4,
+    transition: { duration: 0.15, ease: "easeIn" },
+  },
+};
+
 /* ── Page transition wrapper ─────────────────────────────────────────── */
 
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <motion.div
-      key={pathname}
-      initial={{ opacity: 0, y: 8, filter: "blur(3px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
-      className="h-full"
-    >
-      {children}
-    </motion.div>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={pathname}
+        initial={{ opacity: 0, y: 6, filter: "blur(2px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        exit={{ opacity: 0, y: -4, filter: "blur(1px)" }}
+        transition={{ duration: 0.25, ease: EASE_OUT_EXPO }}
+        className="h-full"
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

@@ -13,6 +13,7 @@ declare module "next-auth" {
       image?: string | null;
       role: string;
       workspaceId: string;
+      workspaceName: string;
     };
   }
 }
@@ -22,6 +23,7 @@ declare module "next-auth/jwt" {
     userId: string;
     role: string;
     workspaceId: string;
+    workspaceName: string;
   }
 }
 
@@ -62,6 +64,7 @@ export const authOptions: NextAuthOptions = {
           image: user.image,
           role: user.role,
           workspaceId: user.workspaceId,
+          workspaceName: user.workspace.name,
         };
       },
     }),
@@ -112,15 +115,18 @@ export const authOptions: NextAuthOptions = {
           token.userId = user.id as string;
           token.role = (user as unknown as { role: string }).role;
           token.workspaceId = (user as unknown as { workspaceId: string }).workspaceId;
+          token.workspaceName = (user as unknown as { workspaceName: string }).workspaceName;
         } else if (account?.provider === "google" && user.email) {
           // For OAuth, look up the user we just created / already exists
           const dbUser = await prisma.user.findUnique({
             where: { email: user.email },
+            include: { workspace: true },
           });
           if (dbUser) {
             token.userId = dbUser.id;
             token.role = dbUser.role;
             token.workspaceId = dbUser.workspaceId;
+            token.workspaceName = dbUser.workspace.name;
           }
         }
       }
@@ -131,6 +137,7 @@ export const authOptions: NextAuthOptions = {
       session.user.id = token.userId;
       session.user.role = token.role;
       session.user.workspaceId = token.workspaceId;
+      session.user.workspaceName = token.workspaceName;
       return session;
     },
   },

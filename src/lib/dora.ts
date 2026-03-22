@@ -77,6 +77,26 @@ export const COMPETENT_AUTHORITIES: Record<string, string> = {
   EU: "European Banking Authority (EBA)",
 };
 
+/** Map Prisma ContractStatus to UI DocumentStatus */
+export function mapContractStatus(prismaStatus: string): DocumentStatus {
+  switch (prismaStatus) {
+    case "PENDING":
+      return "pending";
+    case "PROCESSING":
+      return "extracting";
+    case "EXTRACTED":
+      return "review";
+    case "APPROVED":
+      return "approved";
+    case "REJECTED":
+      return "rejected";
+    case "FAILED":
+      return "rejected";
+    default:
+      return "pending";
+  }
+}
+
 /** Get a risk level label from a numeric score */
 export function getRiskLabel(score: number): "Critical" | "High" | "Medium" | "Low" {
   if (score >= 80) return "Critical";

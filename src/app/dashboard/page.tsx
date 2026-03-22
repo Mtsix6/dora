@@ -23,9 +23,9 @@ import { StatusBadge } from "@/components/status-badge";
 import { UploadDialog } from "@/components/upload-dialog";
 import { cn } from "@/lib/utils";
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { mapContractStatus } from "@/lib/dora";
 
 export const dynamic = "force-dynamic";
 
@@ -358,7 +358,7 @@ export default async function DashboardPage() {
                             {(contract.extractedData as any)?.entityName?.value || "Extracting…"}
                           </p>
                         </div>
-                        <StatusBadge status={contract.status as any} />
+                        <StatusBadge status={mapContractStatus(contract.status)} />
                         <span className="text-[11px] text-muted-foreground flex-shrink-0 hidden sm:inline">
                           {formatRelativeTime(contract.createdAt.toISOString())}
                         </span>

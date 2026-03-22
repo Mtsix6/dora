@@ -30,11 +30,11 @@ const BREADCRUMB_MAP: Record<string, { label: string; href: string }[]> = {
   ],
   "/extraction": [
     { label: "Contracts", href: "/contracts" },
-    { label: "Vendors", href: "/contracts" },
-    { label: "Vendor_SLA_AWS.pdf", href: "/extraction" },
+    { label: "Extraction", href: "/extraction" },
   ],
   "/register": [{ label: "Register", href: "/register" }],
   "/review": [{ label: "In Review", href: "/review" }],
+  "/settings": [{ label: "Settings", href: "/settings" }],
   "/ict-risk": [
     { label: "DORA Pillars", href: "#" },
     { label: "ICT Risk Management", href: "/ict-risk" },
@@ -176,7 +176,7 @@ export function TopNavbar() {
         <Tooltip>
           <TooltipTrigger
             className={iconBtnClass}
-            onClick={() => toast.info("Settings", { description: "Settings panel coming soon." })}
+            onClick={() => (window.location.href = "/settings")}
           >
             <Settings className="size-4" />
           </TooltipTrigger>

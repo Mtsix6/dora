@@ -52,7 +52,7 @@ export async function PATCH(
   if (action === "approve") {
     const contract = await prisma.contract.update({
       where: { id },
-      data: { status: "EXTRACTED" },
+      data: { status: "APPROVED" },
     });
 
     await prisma.activity.create({
@@ -70,7 +70,7 @@ export async function PATCH(
   if (action === "reject") {
     const contract = await prisma.contract.update({
       where: { id },
-      data: { status: "FAILED" },
+      data: { status: "REJECTED" },
     });
 
     await prisma.activity.create({

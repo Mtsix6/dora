@@ -20,5 +20,7 @@ export const config = {
     "/ict-risk/:path*",
     "/library/:path*",
     "/third-party-risk/:path*",
+    "/onboarding/:path*",
+    "/settings/:path*",
   ],
 };

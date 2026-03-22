@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useExtractionStore } from "@/store/extraction-store";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -81,7 +82,9 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
 
 export function LeftSidebar() {
   const { isSidebarCollapsed } = useExtractionStore();
+  const { data: session } = useSession();
   const pathname = usePathname();
+  const workspaceName = session?.user?.workspaceName || "My Workspace";
 
   return (
     <motion.aside
@@ -117,7 +120,7 @@ export function LeftSidebar() {
             <Building2 className="size-3 text-white" />
           </div>
           <span className="text-[12px] font-medium text-[#0A2540] truncate flex-1 text-left">
-            Acme Bank plc
+            {workspaceName}
           </span>
           <ChevronDown className="size-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-y-0.5" />
         </button>

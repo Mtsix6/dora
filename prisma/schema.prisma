@@ -22,6 +22,8 @@ enum ContractStatus {
   PENDING
   PROCESSING
   EXTRACTED
+  APPROVED
+  REJECTED
   FAILED
 }
 

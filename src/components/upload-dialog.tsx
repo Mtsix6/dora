@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   AlertCircle,
@@ -20,12 +21,11 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-
-
 interface QueuedFile {
   id: string;
   name: string;
   size: number;
+  file: File;
   status: "queued" | "uploading" | "done" | "error";
 }
 
@@ -36,9 +36,11 @@ function formatSize(bytes: number) {
 }
 
 export function UploadDialog() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<QueuedFile[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback((incoming: FileList | File[]) => {
     const valid = Array.from(incoming).filter((f) => {
@@ -60,6 +62,7 @@ export function UploadDialog() {
         id: crypto.randomUUID(),
         name: f.name,
         size: f.size,
+        file: f,
         status: "queued" as const,
       })),
     ]);
@@ -90,39 +93,42 @@ export function UploadDialog() {
 
     let successCount = 0;
 
-    for (const file of files) {
+    for (const queuedFile of files) {
+      if (queuedFile.status !== "queued") continue;
+
       setFiles((prev) =>
         prev.map((f) =>
-          f.id === file.id ? { ...f, status: "uploading" as const } : f
+          f.id === queuedFile.id ? { ...f, status: "uploading" as const } : f
         )
       );
 
       try {
-        // Call real API
-        const res = await fetch("/api/contracts", {
+        const formData = new FormData();
+        formData.append("file", queuedFile.file);
+
+        const res = await fetch("/api/upload", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fileName: file.name,
-            uploadedBy: "Current User",
-          }),
+          body: formData,
         });
 
-        if (!res.ok) throw new Error("Upload failed");
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Upload failed");
+        }
 
         setFiles((prev) =>
           prev.map((f) =>
-            f.id === file.id ? { ...f, status: "done" as const } : f
+            f.id === queuedFile.id ? { ...f, status: "done" as const } : f
           )
         );
         successCount++;
-      } catch {
+      } catch (err) {
         setFiles((prev) =>
           prev.map((f) =>
-            f.id === file.id ? { ...f, status: "error" as const } : f
+            f.id === queuedFile.id ? { ...f, status: "error" as const } : f
           )
         );
-        toast.error(`Failed to upload ${file.name}`);
+        toast.error(`Failed to upload ${queuedFile.name}`);
       }
     }
 
@@ -139,8 +145,7 @@ export function UploadDialog() {
     setTimeout(() => {
       setFiles([]);
       setOpen(false);
-      // Trigger a page refresh to show the new data
-      window.dispatchEvent(new CustomEvent("contracts-updated"));
+      router.refresh();
     }, 1000);
   };
 
@@ -150,7 +155,7 @@ export function UploadDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
-        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-[#E3E8EF] bg-white px-3 h-8 text-[12px] font-medium text-[#0A2540] hover:bg-[#F6F9FC] transition-colors cursor-pointer"
+        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-[#E3E8EF] bg-white px-3 h-8 text-[12px] font-medium text-[#0A2540] hover:bg-[#F6F9FC] transition-all duration-200 hover:border-[#635BFF]/30 cursor-pointer"
       >
         <Upload className="size-3.5" />
         Upload PDF
@@ -170,9 +175,9 @@ export function UploadDialog() {
         <div className="px-6">
           <label
             className={cn(
-              "flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 cursor-pointer transition-all",
+              "flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 cursor-pointer transition-all duration-200",
               isDragging
-                ? "border-[#635BFF] bg-[#635BFF]/5"
+                ? "border-[#635BFF] bg-[#635BFF]/5 scale-[1.01]"
                 : "border-[#E3E8EF] hover:border-[#635BFF]/40 hover:bg-[#F6F9FC]"
             )}
             onDragOver={(e) => {
@@ -182,10 +187,13 @@ export function UploadDialog() {
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
           >
-            <div className="size-10 rounded-xl bg-[#635BFF]/10 flex items-center justify-center">
+            <div className={cn(
+              "size-10 rounded-xl flex items-center justify-center transition-all duration-200",
+              isDragging ? "bg-[#635BFF]/15 scale-110" : "bg-[#635BFF]/10"
+            )}>
               <Upload
                 className={cn(
-                  "size-5 transition-colors",
+                  "size-5 transition-colors duration-200",
                   isDragging ? "text-[#635BFF]" : "text-[#635BFF]/70"
                 )}
               />
@@ -201,6 +209,7 @@ export function UploadDialog() {
               </span>
             </div>
             <input
+              ref={inputRef}
               type="file"
               className="sr-only"
               multiple
@@ -216,9 +225,19 @@ export function UploadDialog() {
             {files.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center gap-2.5 rounded-lg border border-[#E3E8EF] px-3 py-2"
+                className={cn(
+                  "flex items-center gap-2.5 rounded-lg border px-3 py-2 transition-all duration-200",
+                  file.status === "done"
+                    ? "border-emerald-200 bg-emerald-50/30"
+                    : file.status === "error"
+                      ? "border-red-200 bg-red-50/30"
+                      : "border-[#E3E8EF]"
+                )}
               >
-                <FileText className="size-4 text-[#635BFF] flex-shrink-0" />
+                <FileText className={cn(
+                  "size-4 flex-shrink-0 transition-colors",
+                  file.status === "done" ? "text-emerald-500" : "text-[#635BFF]"
+                )} />
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-medium text-[#0A2540] truncate">
                     {file.name}
@@ -230,7 +249,7 @@ export function UploadDialog() {
                 {file.status === "queued" && (
                   <button
                     onClick={() => removeFile(file.id)}
-                    className="size-5 rounded flex items-center justify-center text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="size-5 rounded flex items-center justify-center text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors duration-150"
                   >
                     <X className="size-3" />
                   </button>
@@ -260,7 +279,7 @@ export function UploadDialog() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-[12px] border-[#E3E8EF]"
+              className="h-8 text-[12px] border-[#E3E8EF] hover:bg-white"
               onClick={() => {
                 setFiles([]);
                 setOpen(false);
@@ -278,7 +297,7 @@ export function UploadDialog() {
               {isUploading ? (
                 <>
                   <Loader2 className="size-3.5 mr-1.5 animate-spin" />
-                  Uploading…
+                  Uploading...
                 </>
               ) : (
                 <>
