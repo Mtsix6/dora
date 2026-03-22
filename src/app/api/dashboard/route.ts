@@ -85,14 +85,14 @@ export async function GET() {
   // Expiring contracts (within 90 days)
   const now = Date.now();
   const expiringContracts = contractsWithData
-    .filter((c) => {
+    .filter((c: any) => {
       const data = c.extractedData as Record<string, { value?: string }>;
       const endDate = data?.endDate?.value;
       if (!endDate) return false;
       const daysLeft = Math.ceil((new Date(endDate).getTime() - now) / 86_400_000);
       return daysLeft >= 0 && daysLeft <= 90;
     })
-    .map((c) => {
+    .map((c: any) => {
       const data = c.extractedData as Record<string, { value?: string }>;
       return {
         id: c.id,
