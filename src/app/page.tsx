@@ -159,11 +159,11 @@ export default function LandingPage() {
       >
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 select-none group">
-            <div className="size-6 rounded-md bg-[#635BFF] flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+            <div className="size-6 rounded-md bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-sm shadow-indigo-600/20">
               <LayoutGrid className="size-3.5 text-white" strokeWidth={2.5} />
             </div>
-            <span className="text-sm font-bold text-[#0A2540] tracking-tight">
-              DORA<span className="text-[#635BFF]">·</span>RoI
+            <span className="text-sm font-bold text-[#1E293B] tracking-tight">
+              DORA<span className="text-indigo-600">·</span>RoI
             </span>
           </Link>
 
@@ -199,7 +199,7 @@ export default function LandingPage() {
                 <Link href="/signup">
                   <Button
                     size="sm"
-                    className="h-8 text-[13px] bg-[#635BFF] hover:bg-[#4F46E5] text-white px-4 transition-all duration-200 hover:shadow-lg hover:shadow-[#635BFF]/20"
+                    className="h-8 text-[13px] bg-gradient-to-tr from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 text-white px-4 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-600/20"
                   >
                     Get started free
                     <ArrowRight className="size-3.5 ml-1.5" />
@@ -212,28 +212,29 @@ export default function LandingPage() {
       </motion.nav>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <div ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#0A2540]">
+      <div ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#030712]">
         {/* Advanced Background: Animated Aurora/Glows */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0A192F]/10 to-[#030712] z-0" />
           <motion.div 
              animate={{ 
                scale: [1, 1.2, 1],
-               opacity: [0.3, 0.5, 0.3],
+               opacity: [0.2, 0.4, 0.2],
                x: [0, 50, 0],
                y: [0, -30, 0]
              }}
              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-             className="absolute -top-[20%] -left-[10%] w-[800px] h-[800px] rounded-full bg-gradient-to-br from-[#635BFF]/30 to-transparent blur-[120px]" 
+             className="absolute -top-[20%] -left-[10%] w-[800px] h-[800px] rounded-full bg-gradient-to-br from-indigo-600/20 to-transparent blur-[160px]" 
           />
           <motion.div 
              animate={{ 
                scale: [1, 1.3, 1],
-               opacity: [0.2, 0.4, 0.2],
+               opacity: [0.15, 0.3, 0.15],
                x: [0, -40, 0],
                y: [0, 60, 0]
              }}
              transition={{ duration: 18, repeat: Infinity, ease: "linear", delay: 2 }}
-             className="absolute -bottom-[10%] -right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-emerald-500/20 to-transparent blur-[100px]" 
+             className="absolute -bottom-[10%] -right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-indigo-400/15 to-transparent blur-[140px]" 
           />
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 contrast-150 brightness-100 mix-blend-overlay" />
         </div>
@@ -263,7 +264,7 @@ export default function LandingPage() {
             transition={{ duration: 0.8, ease: EASE_OUT_EXPO, delay: 0.1 }}
           >
             Compliance at the <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#635BFF] via-[#A09DFF] to-[#635BFF] bg-[length:200%_auto] animate-gradient">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-200 to-indigo-400 bg-[length:200%_auto] animate-gradient">
               speed of light.
             </span>
           </motion.h1>
@@ -285,7 +286,7 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.45, ease: EASE_OUT_EXPO }}
           >
             <Link href="/signup" className="w-full sm:w-auto">
-              <Button className="w-full h-14 px-10 text-[15px] bg-[#635BFF] hover:bg-[#5249E0] text-white font-bold transition-all duration-500 rounded-2xl shadow-[0_0_30px_rgba(99,91,255,0.4)] hover:shadow-[0_0_40px_rgba(99,91,255,0.6)] hover:-translate-y-1 active:scale-95">
+              <Button className="w-full h-14 px-10 text-[15px] bg-gradient-to-tr from-indigo-600 to-blue-500 hover:opacity-90 text-white font-bold transition-all duration-500 rounded-2xl shadow-[0_0_30px_rgba(79,70,229,0.3)] hover:shadow-[0_0_40px_rgba(79,70,229,0.5)] hover:-translate-y-1 active:scale-95">
                 Scale to Enterprise
                 <ArrowRight className="size-5 ml-3" />
               </Button>
@@ -296,7 +297,7 @@ export default function LandingPage() {
                 className="w-full h-14 px-10 text-[15px] border-white/10 bg-white/5 backdrop-blur-md text-white font-bold transition-all duration-500 rounded-2xl hover:bg-white/10 hover:border-white/30 hover:-translate-y-1 active:scale-95"
               >
                 Launch Platform
-                <Zap className="size-5 ml-3 text-[#635BFF]" />
+                <Zap className="size-5 ml-3 text-indigo-400" />
               </Button>
             </Link>
           </motion.div>
@@ -463,10 +464,10 @@ export default function LandingPage() {
                 variants={fadeUp}
                 custom={i}
               >
-                <div className="size-10 rounded-xl bg-[#635BFF]/8 flex items-center justify-center mx-auto mb-3">
-                  <Icon className="size-5 text-[#635BFF]" />
+                <div className="size-10 rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-3 shadow-sm shadow-indigo-600/5 transition-transform hover:scale-110 duration-300">
+                  <Icon className="size-5 text-indigo-600" />
                 </div>
-                <div className="text-3xl font-bold text-[#0A2540] tracking-tight">{stat.value}</div>
+                <div className="text-3xl font-bold text-[#1E293B] tracking-tight">{stat.value}</div>
                 <div className="text-[12px] text-muted-foreground mt-1 font-medium">{stat.label}</div>
               </motion.div>
             );
@@ -479,11 +480,11 @@ export default function LandingPage() {
         <motion.div className="text-center mb-14" variants={fadeUp}>
           <Badge
             variant="outline"
-            className="mb-4 border-[#635BFF]/20 text-[#635BFF] bg-[#635BFF]/5 font-semibold text-[11px] px-3 py-1 rounded-full"
+            className="mb-4 border-indigo-100 text-indigo-600 bg-indigo-50/50 backdrop-blur-sm font-semibold text-[11px] px-3 py-1 rounded-full"
           >
             Features
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#0A2540] tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#1E293B] tracking-tight">
             Everything you need for DORA Art. 28
           </h2>
           <p className="mt-3 text-muted-foreground max-w-xl mx-auto text-[15px]">
@@ -501,10 +502,10 @@ export default function LandingPage() {
                 variants={fadeUp}
                 custom={i}
               >
-                <div className="size-10 rounded-xl bg-[#635BFF]/8 flex items-center justify-center mb-4 group-hover:bg-[#635BFF]/15 group-hover:scale-110 transition-all duration-300">
-                  <Icon className="size-5 text-[#635BFF]" />
+                <div className="size-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:bg-indigo-100 group-hover:scale-110 transition-all duration-300">
+                  <Icon className="size-5 text-indigo-600" />
                 </div>
-                <h3 className="text-[15px] font-semibold text-[#0A2540] mb-2">{f.title}</h3>
+                <h3 className="text-[15px] font-semibold text-[#1E293B] mb-2">{f.title}</h3>
                 <p className="text-[13px] text-muted-foreground leading-relaxed">{f.description}</p>
               </motion.div>
             );
@@ -590,17 +591,17 @@ export default function LandingPage() {
                 variants={fadeUp}
                 custom={i}
               >
-                <div className="text-[10px] font-bold text-[#635BFF] uppercase tracking-widest mb-2">
+                <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">
                   {pillar.article}
                 </div>
-                <h3 className="text-[13px] font-semibold text-white mb-2 leading-snug group-hover:text-[#635BFF] transition-colors duration-300">
+                <h3 className="text-[13px] font-semibold text-white mb-2 leading-snug group-hover:text-indigo-400 transition-colors duration-300">
                   {pillar.title}
                 </h3>
                 <p className="text-[11px] text-[#8899aa] leading-relaxed">
                   {pillar.description}
                 </p>
                 {i === 3 && (
-                  <Badge className="mt-3 text-[10px] bg-[#635BFF]/20 text-[#635BFF] border-[#635BFF]/30 border">
+                  <Badge className="mt-3 text-[10px] bg-indigo-500/20 text-indigo-400 border-indigo-500/30 border">
                     Core module
                   </Badge>
                 )}

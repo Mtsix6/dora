@@ -102,12 +102,12 @@ export function TopNavbar() {
       </Tooltip>
 
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 select-none">
-        <div className="size-5 rounded bg-[#635BFF] flex items-center justify-center">
+      <Link href="/" className="flex items-center gap-2 select-none group">
+        <div className="size-5 rounded bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center shadow-sm shadow-indigo-600/10 group-hover:scale-110 transition-transform">
           <LayoutGrid className="size-3 text-white" strokeWidth={2.5} />
         </div>
-        <span className="text-sm font-semibold text-[#0A2540] tracking-tight">
-          DORA<span className="text-[#635BFF]">·</span>RoI
+        <span className="text-sm font-semibold text-[#1E293B] tracking-tight">
+          DORA<span className="text-indigo-600">·</span>RoI
         </span>
       </Link>
 
@@ -214,7 +214,7 @@ export function TopNavbar() {
             className={cn(iconBtnClass, "relative border-l border-[#E3E8EF] ml-1 pl-2")}
           >
             <Bell className="size-4" />
-            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-[#635BFF] dot-pulse" />
+            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-indigo-600 dot-pulse" />
           </TooltipTrigger>
           <TooltipContent side="bottom">Notifications (3)</TooltipContent>
         </Tooltip>
@@ -247,7 +247,7 @@ function UserAvatar() {
   return (
     <Tooltip>
       <TooltipTrigger
-        className="ml-1 size-7 rounded-full bg-gradient-to-br from-[#635BFF] to-[#4F46E5] flex items-center justify-center text-white text-[11px] font-bold select-none cursor-pointer hover:scale-110 hover:shadow-[0_4px_12px_rgba(99,91,255,0.4)] active:scale-95 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="ml-1 size-7 rounded-full bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-white text-[11px] font-bold select-none cursor-pointer hover:scale-110 hover:shadow-[0_4px_12px_rgba(79,70,229,0.4)] active:scale-95 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
         onClick={() => (window.location.href = "/settings")}
       >
         {initials}

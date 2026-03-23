@@ -119,6 +119,14 @@ export function LeftSidebar() {
       style={{ pointerEvents: isSidebarCollapsed ? "none" : "auto" }}
     >
       <div className="flex flex-col gap-0.5 p-2 pt-3 overflow-y-auto flex-1 min-w-56">
+        {/* Logo */}
+        <div className="px-2.5 pb-4">
+          <Link href="/" className="flex items-center gap-2.5 select-none hover:scale-105 transition-transform group">
+            <div className="size-6 rounded-lg bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white text-[8px] font-bold shadow-sm shadow-indigo-600/20 group-hover:shadow-indigo-600/40">DR</div>
+            <span className="text-[15px] font-bold text-[#1E293B] tracking-tight">DORA RoI</span>
+          </Link>
+        </div>
+
         {/* Cmd+K Fake Trigger */}
         <button 
           onClick={() => window.dispatchEvent(new Event('open-cmd-k'))}
@@ -176,15 +184,15 @@ function NavEntry({
           "relative w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] group",
           "transition-colors duration-[120ms] ease-out",
           isActive
-            ? "text-[#635BFF] font-medium"
-            : "text-[#374151] hover:text-[#0A2540]"
+            ? "text-indigo-600 font-medium"
+            : "text-[#475569] hover:text-[#1E293B]"
         )}
       >
         {/* Sliding active background */}
         {isActive && (
           <motion.span
             layoutId="nav-active-bg"
-            className="absolute inset-0 rounded-md bg-[#635BFF]/8"
+            className="absolute inset-0 rounded-md bg-indigo-50"
             transition={{ duration: 0.28, ease: EASE_OUT_EXPO }}
           />
         )}
@@ -197,7 +205,7 @@ function NavEntry({
         <Icon
           className={cn(
             "relative size-3.5 flex-shrink-0 transition-colors duration-[120ms]",
-            isActive ? "text-[#635BFF]" : "text-muted-foreground group-hover:text-[#0A2540]"
+            isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
           )}
         />
         <span className="relative flex-1 text-left truncate">{item.label}</span>
@@ -206,8 +214,8 @@ function NavEntry({
             className={cn(
               "relative text-[10px] font-semibold tabular-nums rounded-full px-1.5 py-0.5 leading-none transition-colors duration-[120ms]",
               isActive
-                ? "bg-[#635BFF]/15 text-[#635BFF]"
-                : "bg-[#F6F9FC] border border-[#E3E8EF] text-muted-foreground"
+                ? "bg-indigo-100 text-indigo-700"
+                : "bg-slate-50 border border-slate-200 text-slate-500"
             )}
           >
             {item.badge}
@@ -225,14 +233,14 @@ function NavEntry({
           "relative w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] group",
           "transition-colors duration-[120ms] ease-out",
           isActive
-            ? "text-[#635BFF] font-medium"
-            : "text-[#374151] hover:text-[#0A2540]"
+            ? "text-indigo-600 font-medium"
+            : "text-[#475569] hover:text-[#1E293B]"
         )}
       >
         {isActive && (
           <motion.span
             layoutId="nav-active-bg"
-            className="absolute inset-0 rounded-md bg-gradient-to-r from-[#635BFF]/10 to-transparent border-l-2 border-[#635BFF]"
+            className="absolute inset-0 rounded-md bg-gradient-to-r from-indigo-500/10 to-transparent border-l-2 border-indigo-600"
             transition={{ duration: 0.28, ease: EASE_OUT_EXPO }}
           />
         )}
@@ -243,7 +251,7 @@ function NavEntry({
         <Icon
           className={cn(
             "relative size-3.5 flex-shrink-0 transition-colors duration-[120ms]",
-            isActive ? "text-[#635BFF]" : "text-muted-foreground group-hover:text-[#0A2540]"
+            isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
           )}
         />
         <span className="relative flex-1 text-left truncate">{item.label}</span>
@@ -285,8 +293,8 @@ function NavEntry({
                       className={cn(
                         "block w-full text-left px-2 py-1 text-[12px] rounded-md transition-all duration-[120ms]",
                         subActive
-                          ? "text-[#635BFF] font-medium bg-[#635BFF]/5"
-                          : "text-muted-foreground hover:text-[#0A2540] hover:bg-[#F6F9FC] hover:translate-x-0.5"
+                          ? "text-indigo-600 font-medium bg-indigo-50"
+                          : "text-slate-500 hover:text-slate-700 hover:bg-slate-50 hover:translate-x-0.5"
                       )}
                     >
                       {sub.label}
