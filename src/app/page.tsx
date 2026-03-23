@@ -212,29 +212,29 @@ export default function LandingPage() {
       </motion.nav>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <div ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[#030712]">
-        {/* Advanced Background: Animated Aurora/Glows */}
+      <div ref={heroRef} className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-white">
+        {/* Advanced Background: Subtle Light Glows */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0A192F]/10 to-[#030712] z-0" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white z-0" />
           <motion.div 
              animate={{ 
                scale: [1, 1.2, 1],
-               opacity: [0.2, 0.4, 0.2],
+               opacity: [0.3, 0.5, 0.3],
                x: [0, 50, 0],
                y: [0, -30, 0]
              }}
              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-             className="absolute -top-[20%] -left-[10%] w-[800px] h-[800px] rounded-full bg-gradient-to-br from-indigo-600/20 to-transparent blur-[160px]" 
+             className="absolute -top-[20%] -left-[10%] w-[800px] h-[800px] rounded-full bg-gradient-to-br from-indigo-100/40 to-transparent blur-[120px]" 
           />
           <motion.div 
              animate={{ 
                scale: [1, 1.3, 1],
-               opacity: [0.15, 0.3, 0.15],
+               opacity: [0.2, 0.4, 0.2],
                x: [0, -40, 0],
                y: [0, 60, 0]
              }}
              transition={{ duration: 18, repeat: Infinity, ease: "linear", delay: 2 }}
-             className="absolute -bottom-[10%] -right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-indigo-400/15 to-transparent blur-[140px]" 
+             className="absolute -bottom-[10%] -right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-50/30 to-transparent blur-[100px]" 
           />
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 contrast-150 brightness-100 mix-blend-overlay" />
         </div>
@@ -250,27 +250,27 @@ export default function LandingPage() {
           >
             <Badge
               variant="outline"
-              className="mb-8 border-white/10 text-white bg-white/5 backdrop-blur-md font-bold text-[11px] px-4 py-1.5 rounded-full ring-1 ring-white/20 hover:bg-white/10 transition-all duration-500 cursor-default tracking-widest uppercase"
+              className="mb-8 border-indigo-100 text-indigo-600 bg-indigo-50/50 backdrop-blur-md font-bold text-[11px] px-4 py-1.5 rounded-full ring-1 ring-indigo-500/10 hover:bg-indigo-50/80 transition-all duration-500 cursor-default tracking-widest uppercase"
             >
-              <Sparkles className="size-3 mr-2 text-[#635BFF] animate-pulse" />
+              <Sparkles className="size-3 mr-2 text-indigo-500 animate-pulse" />
               The Future of DORA Compliance is Here
             </Badge>
           </motion.div>
 
           <motion.h1
-            className="text-6xl md:text-[88px] font-black text-white leading-[1] tracking-tighter max-w-4xl mx-auto mb-8"
+            className="text-6xl md:text-[88px] font-black text-slate-900 leading-[1] tracking-tighter max-w-4xl mx-auto mb-8"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE_OUT_EXPO, delay: 0.1 }}
           >
             Compliance at the <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-200 to-indigo-400 bg-[length:200%_auto] animate-gradient">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-600 bg-[length:200%_auto] animate-gradient">
               speed of light.
             </span>
           </motion.h1>
 
           <motion.p
-            className="text-xl md:text-2xl text-white/60 max-w-2xl mx-auto leading-relaxed mb-12 font-medium"
+            className="text-xl md:text-2xl text-slate-500 max-w-2xl mx-auto leading-relaxed mb-12 font-medium"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3, ease: EASE_OUT_EXPO }}
@@ -294,23 +294,23 @@ export default function LandingPage() {
             <Link href="/dashboard" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="w-full h-14 px-10 text-[15px] border-white/10 bg-white/5 backdrop-blur-md text-white font-bold transition-all duration-500 rounded-2xl hover:bg-white/10 hover:border-white/30 hover:-translate-y-1 active:scale-95"
+                className="w-full h-14 px-10 text-[15px] border-slate-200 bg-white text-slate-800 font-bold transition-all duration-500 rounded-2xl hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-1 active:scale-95 shadow-sm"
               >
                 Launch Platform
-                <Zap className="size-5 ml-3 text-indigo-400" />
+                <Zap className="size-5 ml-3 text-indigo-500" />
               </Button>
             </Link>
           </motion.div>
 
           <motion.div 
-            className="mt-16 flex items-center justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500"
+            className="mt-12 flex items-center justify-center gap-8 opacity-60 hover:opacity-100 transition-all duration-500"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
+            animate={{ opacity: 0.6 }}
             transition={{ delay: 0.8 }}
           >
-             <div className="text-white text-xs font-bold tracking-widest uppercase">Trusted By</div>
-             <div className="h-px w-12 bg-white/20" />
-             <div className="flex gap-6 text-[11px] font-black text-white tracking-tighter italic">
+             <div className="text-slate-400 text-xs font-bold tracking-widest uppercase">Trusted By</div>
+             <div className="h-px w-12 bg-slate-200" />
+             <div className="flex gap-6 text-[11px] font-black text-slate-800 tracking-tighter italic">
                 <span>GOLDMAN SACHS</span>
                 <span>BARCLAYS</span>
                 <span>HSBC</span>
@@ -328,7 +328,7 @@ export default function LandingPage() {
 
         {/* ── Product Preview (Mock Screenshot) ──────────────────── */}
         <motion.div
-          className="relative max-w-5xl mx-auto px-6 pb-16"
+          className="relative max-w-5xl mx-auto px-6 pb-20 -mt-10"
           initial={{ opacity: 0, y: 60, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -434,8 +434,8 @@ export default function LandingPage() {
           </div>
 
           {/* Floating glow behind the screenshot */}
-          <div className="absolute inset-0 -z-10 blur-[60px] opacity-50">
-            <div className="absolute inset-x-10 bottom-0 h-1/2 bg-gradient-to-t from-[#635BFF]/10 to-transparent rounded-full" />
+          <div className="absolute inset-0 -z-10 blur-[100px] opacity-40">
+            <div className="absolute inset-x-10 bottom-0 h-1/2 bg-gradient-to-t from-indigo-100 to-transparent rounded-full" />
           </div>
         </motion.div>
 
