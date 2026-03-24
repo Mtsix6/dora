@@ -41,6 +41,15 @@ enum SubscriptionStatus {
   INCOMPLETE
 }
 
+enum AiProvider {
+  OPENAI
+  ANTHROPIC
+  GOOGLE
+  MISTRAL
+  OPENROUTER
+  DEEPSEEK
+}
+
 // ────────────────────────────────────────────
 // Models
 // ────────────────────────────────────────────
@@ -71,6 +80,13 @@ model Workspace {
   integrations       Integration[]
   apiKeys            ApiKey[]
   webhookEndpoints   WebhookEndpoint[]
+
+  // AI Configuration & Usage
+  aiProvider         AiProvider @default(GOOGLE)
+  aiModel            String?    // e.g. "gemini-1.5-pro", "claude-3-5-sonnet"
+  customAiKey        String?    @map("custom_ai_key")
+  aiUsageCount       Int        @default(0) @map("ai_usage_count")
+  lastUsageReset     DateTime   @default(now()) @map("last_usage_reset")
 
   @@map("workspaces")
 }

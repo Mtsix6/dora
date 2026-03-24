@@ -1,115 +1,121 @@
-import { NextRequest } from "next/server";
+import { streamText, type ModelMessage } from "ai";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { z } from "zod";
 import { authOptions } from "@/lib/auth";
-import { getAnthropicClient, DORA_SYSTEM_PROMPT } from "@/lib/ai";
+import {
+  checkAiUsage,
+  DORA_SYSTEM_PROMPT,
+  getAiModel,
+  getProviderDetails,
+  incrementAiUsage,
+  isAiProvider,
+} from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+const chatPayloadSchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.enum(["user", "assistant"]),
+      content: z.string().trim().min(1).max(10000),
+    }),
+  ).min(1),
+  context: z.string().trim().max(1000).optional(),
+  modelId: z.string().trim().max(120).optional(),
+  provider: z.string().optional(),
+});
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.workspaceId) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { messages, context } = (await request.json()) as {
-      messages: { role: "user" | "assistant"; content: string }[];
-      context?: string;
-    };
-
-    if (!messages?.length) {
-      return new Response(JSON.stringify({ error: "Messages required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+    const payload = chatPayloadSchema.safeParse(await request.json());
+    if (!payload.success) {
+      return NextResponse.json({ error: "Invalid chat payload" }, { status: 400 });
     }
 
-    // Look up workspace-level Anthropic API key from integrations
-    const integration = await prisma.integration.findFirst({
-      where: {
-        workspaceId: session.user.workspaceId,
-        provider: "anthropic",
-        status: "Active",
-      },
-    });
-
-    const apiKey = (integration?.config as { apiKey?: string })?.apiKey ?? null;
-
-    const client = getAnthropicClient(apiKey);
-
-    // Build system prompt with optional page context
-    let systemPrompt = DORA_SYSTEM_PROMPT;
-    if (context) {
-      systemPrompt += `\n\nCurrent page context: ${context}`;
+    const usage = await checkAiUsage(session.user.workspaceId);
+    if (!usage.allowed) {
+      return NextResponse.json(
+        {
+          error: "Usage limit exceeded",
+          message: `You have reached your daily AI limit for the ${usage.tier} tier.`,
+        },
+        { status: 429 },
+      );
     }
 
-    // Stream the response
-    const stream = await client.messages.stream({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      })),
-    });
-
-    // Convert to a ReadableStream for the client
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const event of stream) {
-            if (
-              event.type === "content_block_delta" &&
-              event.delta.type === "text_delta"
-            ) {
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ text: event.delta.text })}\n\n`),
-              );
-            }
-          }
-          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-          controller.close();
-        } catch (err) {
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({ error: err instanceof Error ? err.message : "Stream error" })}\n\n`,
-            ),
-          );
-          controller.close();
-        }
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: session.user.workspaceId },
+      select: {
+        aiProvider: true,
+        aiModel: true,
+        customAiKey: true,
       },
     });
 
-    // Log the AI interaction for audit
-    await prisma.auditLog.create({
-      data: {
-        workspaceId: session.user.workspaceId,
-        userId: session.user.id,
-        action: "ai_copilot_query",
-        entity: "ai",
-        metadata: { messageCount: messages.length },
-      },
-    }).catch(() => {});
+    if (!workspace) {
+      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+    }
 
-    return new Response(readable, {
+    const requestedProvider = payload.data.provider?.toUpperCase();
+    if (requestedProvider && !isAiProvider(requestedProvider)) {
+      return NextResponse.json({ error: "Unsupported AI provider" }, { status: 400 });
+    }
+
+    const provider = requestedProvider && isAiProvider(requestedProvider)
+      ? requestedProvider
+      : workspace.aiProvider;
+    const modelId = payload.data.modelId?.trim() || workspace.aiModel;
+    const model = getAiModel(provider, modelId, workspace.customAiKey);
+
+    const messages: ModelMessage[] = payload.data.messages.map((message) => ({
+      role: message.role,
+      content: message.content,
+    }));
+
+    const system = payload.data.context
+      ? `${DORA_SYSTEM_PROMPT}\n\nCurrent page context: ${payload.data.context}`
+      : DORA_SYSTEM_PROMPT;
+
+    const result = streamText({
+      model,
+      system,
+      messages,
+      onFinish: async () => {
+        await incrementAiUsage(session.user.workspaceId);
+
+        await prisma.auditLog.create({
+          data: {
+            workspaceId: session.user.workspaceId,
+            userId: session.user.id,
+            action: "ai_copilot_query",
+            entity: "ai",
+            metadata: {
+              provider,
+              providerLabel: getProviderDetails(provider).label,
+              modelId: modelId ?? getProviderDetails(provider).defaultModel,
+              messageCount: messages.length,
+            },
+          },
+        }).catch(() => {});
+      },
+    });
+
+    return result.toUIMessageStreamResponse({
       headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
+        "X-AI-Provider": provider,
+        "X-AI-Usage-Remaining": usage.remaining === null ? "unlimited" : String(usage.remaining),
       },
     });
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "AI service unavailable";
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+  } catch (error) {
+    console.error("AI Chat Error:", error);
+    const message = error instanceof Error ? error.message : "AI service unavailable";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

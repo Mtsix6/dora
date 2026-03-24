@@ -1,146 +1,161 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Session } from "next-auth";
 import { getServerSession } from "next-auth";
+import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  AI_PROVIDER_CATALOG,
+  AI_TIER_LIMITS,
+  getMaskedKey,
+  isAiProvider,
+} from "@/lib/ai";
 
 export const dynamic = "force-dynamic";
 
-/** GET — retrieve current AI provider config (masked key) */
+const updateAiSettingsSchema = z.object({
+  provider: z.string(),
+  modelId: z.string().trim().max(120).optional().or(z.literal("")),
+  apiKey: z.string().trim().max(500).optional().or(z.literal("")),
+});
+
+function ensureWorkspaceAdmin(session: Session | null) {
+  if (!session?.user?.workspaceId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+  }
+
+  return null;
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.workspaceId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const integration = await prisma.integration.findFirst({
-    where: {
-      workspaceId: session.user.workspaceId,
-      provider: "anthropic",
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: session.user.workspaceId },
+    select: {
+      tier: true,
+      aiProvider: true,
+      aiModel: true,
+      customAiKey: true,
+      aiUsageCount: true,
+      lastUsageReset: true,
     },
   });
 
-  if (!integration) {
-    return NextResponse.json({
-      configured: false,
-      provider: "anthropic",
-      model: "claude-sonnet-4-20250514",
-      hasEnvKey: !!process.env.ANTHROPIC_API_KEY,
-    });
+  if (!workspace) {
+    return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
   }
 
-  const config = integration.config as { apiKey?: string } | null;
-  const rawKey = config?.apiKey || "";
+  const limit = AI_TIER_LIMITS[workspace.tier];
 
   return NextResponse.json({
-    configured: true,
-    provider: "anthropic",
-    model: "claude-sonnet-4-20250514",
-    status: integration.status,
-    maskedKey: rawKey ? `${rawKey.slice(0, 10)}...${rawKey.slice(-4)}` : null,
-    hasEnvKey: !!process.env.ANTHROPIC_API_KEY,
-    updatedAt: integration.updatedAt,
+    tier: workspace.tier,
+    provider: workspace.aiProvider,
+    providerLabel: AI_PROVIDER_CATALOG[workspace.aiProvider].label,
+    modelId: workspace.aiModel,
+    usage: {
+      count: workspace.aiUsageCount,
+      limit: limit === 0 ? "Unlimited" : limit,
+      remaining: limit === 0 ? "Unlimited" : Math.max(0, limit - workspace.aiUsageCount),
+      lastReset: workspace.lastUsageReset,
+    },
+    hasCustomKey: Boolean(workspace.customAiKey),
+    maskedKey: getMaskedKey(workspace.customAiKey),
+    canManage: session.user.role === "OWNER" || session.user.role === "ADMIN",
+    providers: Object.entries(AI_PROVIDER_CATALOG).map(([value, details]) => ({
+      value,
+      label: details.label,
+      defaultModel: details.defaultModel,
+      usesPlatformKeyByDefault: details.usesPlatformKeyByDefault,
+    })),
   });
 }
 
-/** POST — save or update AI provider API key */
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.workspaceId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const permissionError = ensureWorkspaceAdmin(session);
+  if (permissionError) {
+    return permissionError;
   }
 
-  if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+  const parsed = updateAiSettingsSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid AI settings payload" }, { status: 400 });
   }
 
-  const { apiKey } = (await request.json()) as { apiKey: string };
-
-  if (!apiKey || !apiKey.startsWith("sk-")) {
-    return NextResponse.json(
-      { error: "Invalid API key format. Must start with sk-" },
-      { status: 400 },
-    );
+  const providerValue = parsed.data.provider.toUpperCase();
+  if (!isAiProvider(providerValue)) {
+    return NextResponse.json({ error: "Unsupported AI provider" }, { status: 400 });
   }
 
-  // Validate the key by making a small request
-  try {
-    const { default: Anthropic } = await import("@anthropic-ai/sdk");
-    const client = new Anthropic({ apiKey });
-    await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 10,
-      messages: [{ role: "user", content: "test" }],
-    });
-  } catch {
-    return NextResponse.json(
-      { error: "API key validation failed. Please check your key." },
-      { status: 400 },
-    );
-  }
+  const modelId = parsed.data.modelId?.trim() || null;
+  const apiKey = parsed.data.apiKey?.trim() || null;
 
-  // Upsert the integration record
-  const existing = await prisma.integration.findFirst({
-    where: {
-      workspaceId: session.user.workspaceId,
-      provider: "anthropic",
+  await prisma.workspace.update({
+    where: { id: session!.user.workspaceId },
+    data: {
+      aiProvider: providerValue,
+      aiModel: modelId,
+      customAiKey: apiKey,
     },
   });
 
-  if (existing) {
-    await prisma.integration.update({
-      where: { id: existing.id },
-      data: {
-        config: { apiKey },
-        status: "Active",
-      },
-    });
-  } else {
-    await prisma.integration.create({
-      data: {
-        workspaceId: session.user.workspaceId,
-        name: "Anthropic Claude",
-        provider: "anthropic",
-        status: "Active",
-        config: { apiKey },
-      },
-    });
-  }
-
-  // Audit log
   await prisma.auditLog.create({
     data: {
-      workspaceId: session.user.workspaceId,
-      userId: session.user.id,
-      action: "ai_provider_configured",
-      entity: "integration",
-      metadata: { provider: "anthropic" },
+      workspaceId: session!.user.workspaceId,
+      userId: session!.user.id,
+      action: "ai_settings_updated",
+      entity: "workspace",
+      metadata: {
+        provider: providerValue,
+        modelId,
+        hasCustomKey: Boolean(apiKey),
+      },
     },
   }).catch(() => {});
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({
+    success: true,
+    provider: providerValue,
+    modelId,
+    hasCustomKey: Boolean(apiKey),
+  });
 }
 
-/** DELETE — remove AI provider API key */
 export async function DELETE() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.workspaceId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const permissionError = ensureWorkspaceAdmin(session);
+  if (permissionError) {
+    return permissionError;
   }
 
-  if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-  }
-
-  await prisma.integration.updateMany({
-    where: {
-      workspaceId: session.user.workspaceId,
-      provider: "anthropic",
-    },
+  await prisma.workspace.update({
+    where: { id: session!.user.workspaceId },
     data: {
-      status: "Inactive",
-      config: {},
+      aiProvider: "GOOGLE",
+      aiModel: null,
+      customAiKey: null,
     },
   });
+
+  await prisma.auditLog.create({
+    data: {
+      workspaceId: session!.user.workspaceId,
+      userId: session!.user.id,
+      action: "ai_settings_reset",
+      entity: "workspace",
+      metadata: {
+        provider: "GOOGLE",
+      },
+    },
+  }).catch(() => {});
 
   return NextResponse.json({ success: true });
 }
