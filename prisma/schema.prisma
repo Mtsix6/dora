@@ -120,6 +120,7 @@ model Contract {
   id            String         @id @default(cuid())
   fileName      String         @map("file_name")
   fileUrl       String         @map("file_url")
+  fileData      Bytes?         @map("file_data")
   mimeType      String         @map("mime_type")
   status        ContractStatus @default(PENDING)
   extractedData Json?          @map("extracted_data")

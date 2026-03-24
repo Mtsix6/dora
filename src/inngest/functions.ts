@@ -4,6 +4,14 @@ import { getAnthropicClient, DORA_EXTRACTION_PROMPT } from "@/lib/ai";
 import { readFile } from "fs/promises";
 import { join } from "path";
 
+function toStoredBytes(value: Uint8Array | Record<string, number>) {
+  if (value instanceof Uint8Array) {
+    return value;
+  }
+
+  return Uint8Array.from(Object.values(value));
+}
+
 /**
  * Listens for "dora.contract.uploaded", fetches the contract,
  * runs Claude-based DORA field extraction, and persists results.
@@ -27,6 +35,14 @@ export const extractContractData = inngest.createFunction(
     const contract = await step.run("fetch-contract", async () => {
       const record = await prisma.contract.findUniqueOrThrow({
         where: { id: contractId },
+        select: {
+          id: true,
+          fileName: true,
+          fileUrl: true,
+          fileData: true,
+          mimeType: true,
+          uploadedById: true,
+        },
       });
 
       await prisma.contract.update({
@@ -39,6 +55,14 @@ export const extractContractData = inngest.createFunction(
 
     // ── Step 2: Read file content ──
     const fileContent = await step.run("read-file", async () => {
+      if (contract.fileData) {
+        if (contract.mimeType.startsWith("text/")) {
+          return Buffer.from(toStoredBytes(contract.fileData)).toString("utf-8").slice(0, 30000);
+        }
+
+        return `Contract file: ${contract.fileName}\nMIME type: ${contract.mimeType}`;
+      }
+
       try {
         const filePath = join(process.cwd(), "uploads", workspaceId, fileUrl.split("/").pop()!);
         const buffer = await readFile(filePath);

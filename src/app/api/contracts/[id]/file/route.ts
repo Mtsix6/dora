@@ -7,6 +7,14 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+function toStoredBytes(value: Uint8Array | Record<string, number>) {
+  if (value instanceof Uint8Array) {
+    return value;
+  }
+
+  return Uint8Array.from(Object.values(value));
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -25,12 +33,24 @@ export async function GET(
     select: {
       fileName: true,
       fileUrl: true,
+      fileData: true,
       mimeType: true,
     },
   });
 
   if (!contract) {
     return NextResponse.json({ error: "Contract not found" }, { status: 404 });
+  }
+
+  if (contract.fileData) {
+    return new Response(Buffer.from(toStoredBytes(contract.fileData)), {
+      status: 200,
+      headers: {
+        "Content-Type": contract.mimeType,
+        "Content-Disposition": `inline; filename="${encodeURIComponent(contract.fileName)}"`,
+        "Cache-Control": "private, no-store",
+      },
+    });
   }
 
   const fileName = path.basename(contract.fileUrl);

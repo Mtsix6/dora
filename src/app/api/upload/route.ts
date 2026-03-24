@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import path from "node:path";
-import { mkdir, writeFile } from "node:fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -56,19 +55,14 @@ export async function POST(request: NextRequest) {
     }
 
     const safeFileName = `${crypto.randomUUID()}${extension || ".bin"}`;
-    const uploadDir = path.join(process.cwd(), "uploads", session.user.workspaceId);
-    await mkdir(uploadDir, { recursive: true });
-
-    const filePath = path.join(uploadDir, safeFileName);
     const bytes = new Uint8Array(await file.arrayBuffer());
-    await writeFile(filePath, bytes);
-
-    const fileUrl = `/uploads/${session.user.workspaceId}/${safeFileName}`;
+    const fileUrl = `/api/contracts/pending/${safeFileName}`;
 
     const contract = await prisma.contract.create({
       data: {
         fileName: file.name,
         fileUrl,
+        fileData: Buffer.from(bytes),
         mimeType: file.type || "application/octet-stream",
         status: "PENDING",
         uploadedById: session.user.id,

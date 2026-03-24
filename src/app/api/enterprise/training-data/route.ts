@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import path from "node:path";
-import { mkdir, writeFile } from "node:fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -9,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 const ALLOWED_EXTENSIONS = [".json", ".jsonl", ".csv", ".txt", ".md"] as const;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -34,11 +34,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const uploadDir = path.join(process.cwd(), "uploads", session.user.workspaceId, "training-data");
-  await mkdir(uploadDir, { recursive: true });
+  if (file.size > MAX_FILE_SIZE) {
+    return NextResponse.json(
+      { error: `Training file exceeds maximum size of ${MAX_FILE_SIZE / 1024 / 1024} MB` },
+      { status: 413 },
+    );
+  }
 
   const savedName = `${crypto.randomUUID()}${extension}`;
-  await writeFile(path.join(uploadDir, savedName), new Uint8Array(await file.arrayBuffer()));
+  const textPreview = (await file.text()).slice(0, 2000);
 
   await prisma.auditLog.create({
     data: {
@@ -50,6 +54,8 @@ export async function POST(request: NextRequest) {
         originalFileName: file.name,
         storedFileName: savedName,
         size: file.size,
+        contentPreview: textPreview,
+        storage: "audit_log_preview",
       },
     },
   });
