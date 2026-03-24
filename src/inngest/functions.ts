@@ -1,8 +1,10 @@
 import { inngest } from "./client";
 import { prisma } from "@/lib/prisma";
-import { getAnthropicClient, DORA_EXTRACTION_PROMPT } from "@/lib/ai";
+import { getAiModel, incrementAiUsage, DORA_EXTRACTION_PROMPT } from "@/lib/ai";
+import { generateText } from "ai";
 import { readFile } from "fs/promises";
 import { join } from "path";
+import { PDFParse } from "pdf-parse";
 
 function toStoredBytes(value: Uint8Array | Record<string, number>) {
   if (value instanceof Uint8Array) {
@@ -14,7 +16,7 @@ function toStoredBytes(value: Uint8Array | Record<string, number>) {
 
 /**
  * Listens for "dora.contract.uploaded", fetches the contract,
- * runs Claude-based DORA field extraction, and persists results.
+ * runs AI-based DORA field extraction, and persists results.
  * Falls back to a simulated extraction if no AI key is configured.
  */
 export const extractContractData = inngest.createFunction(
@@ -56,6 +58,13 @@ export const extractContractData = inngest.createFunction(
     // ── Step 2: Read file content ──
     const fileContent = await step.run("read-file", async () => {
       if (contract.fileData) {
+        // Extract text from PDFs using pdf-parse
+        if (contract.mimeType === "application/pdf") {
+          const parser = new PDFParse({ data: Buffer.from(toStoredBytes(contract.fileData)) });
+          const pdfData = await parser.getText();
+          return pdfData.text.slice(0, 30000);
+        }
+
         if (contract.mimeType.startsWith("text/")) {
           return Buffer.from(toStoredBytes(contract.fileData)).toString("utf-8").slice(0, 30000);
         }
@@ -66,41 +75,46 @@ export const extractContractData = inngest.createFunction(
       try {
         const filePath = join(process.cwd(), "uploads", workspaceId, fileUrl.split("/").pop()!);
         const buffer = await readFile(filePath);
-        // For PDF files we'd need a PDF parser; for now extract text from txt/docx
-        return buffer.toString("utf-8").slice(0, 30000); // limit to 30k chars
+
+        // Extract text from PDF files on disk
+        if (contract.mimeType === "application/pdf") {
+          const parser = new PDFParse({ data: buffer });
+          const pdfData = await parser.getText();
+          return pdfData.text.slice(0, 30000);
+        }
+
+        return buffer.toString("utf-8").slice(0, 30000);
       } catch {
         return `Contract file: ${contract.fileName}`;
       }
     });
 
-    // ── Step 3: LLM extraction with Claude (or fallback) ──
+    // ── Step 3: LLM extraction using workspace AI provider (or fallback) ──
     const extractedData = await step.run("llm-extraction", async () => {
-      // Check for workspace-level API key
-      const integration = await prisma.integration.findFirst({
-        where: { workspaceId, provider: "anthropic", status: "Active" },
-      });
-      const apiKey = (integration?.config as { apiKey?: string })?.apiKey ?? null;
-
       try {
-        const client = getAnthropicClient(apiKey);
-
-        const response = await client.messages.create({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 2048,
-          system: DORA_EXTRACTION_PROMPT,
-          messages: [
-            {
-              role: "user",
-              content: `Extract DORA-relevant fields from this contract:\n\n${fileContent}`,
-            },
-          ],
+        // Look up workspace AI settings
+        const workspace = await prisma.workspace.findUnique({
+          where: { id: workspaceId },
+          select: { aiProvider: true, aiModel: true, customAiKey: true },
         });
 
-        const text =
-          response.content[0].type === "text" ? response.content[0].text : "";
+        const model = getAiModel(
+          workspace?.aiProvider ?? "GOOGLE",
+          workspace?.aiModel,
+          workspace?.customAiKey,
+        );
+
+        const result = await generateText({
+          model,
+          system: DORA_EXTRACTION_PROMPT,
+          prompt: `Extract DORA-relevant fields from this contract:\n\n${fileContent}`,
+        });
+
+        // Track AI usage
+        await incrementAiUsage(workspaceId);
 
         // Parse the JSON response
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const jsonMatch = result.text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           return JSON.parse(jsonMatch[0]);
         }

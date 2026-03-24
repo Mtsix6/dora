@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UploadDialog } from "@/components/upload-dialog";
+import { RefreshButton } from "./refresh-button";
 import { StatusBadge } from "@/components/status-badge";
 import { authOptions } from "@/lib/auth";
 import { mapContractStatus } from "@/lib/dora";
@@ -179,7 +180,7 @@ export default async function DashboardPage() {
               </div>
               <div className="flex items-center gap-2 text-[12px] text-[#60708A]">
                 <span>Last updated: {formatRelativeTime((workspace?.updatedAt || new Date()).toISOString())}</span>
-                <Button variant="ghost" size="sm" className="h-8 rounded-xl px-3 text-[#5B5BD6]"><RefreshCw className="mr-2 size-3.5" />Refresh</Button>
+                <RefreshButton />
               </div>
             </div>
             <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

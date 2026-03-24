@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   Zap,
   AlertCircle,
+  Radar,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import {
@@ -22,72 +23,6 @@ import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Horizon Scanning" };
-
-/* ------------------------------------------------------------------ */
-/*  Hardcoded mock regulatory news (fallback when DB is empty)        */
-/* ------------------------------------------------------------------ */
-const mockAlerts = [
-  {
-    id: "mock-1",
-    title:
-      "ESMA publishes final report on DORA RTS for threat-led penetration testing",
-    source: "ESMA",
-    category: "Regulatory Update",
-    impact: "High",
-    summary:
-      "The European Securities and Markets Authority has finalized the technical standards for TLPT, specifying the scope and authorities involved.",
-    doraArticle: "DORA Art. 26",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-  },
-  {
-    id: "mock-2",
-    title:
-      "EBA Guidelines on ICT risk management and security updated for 2026",
-    source: "European Banking Authority",
-    category: "Guideline Update",
-    impact: "Medium",
-    summary:
-      "New requirements for cloud service provider concentration risk have been introduced in the latest draft.",
-    doraArticle: "DORA Art. 28",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 6),
-  },
-  {
-    id: "mock-3",
-    title:
-      "Global Supply Chain Warning: Critical vulnerability in common ICT logging library",
-    source: "CERT-EU",
-    category: "Cyber Threat",
-    impact: "Critical",
-    summary:
-      "A zero-day exploit has been identified affecting multiple third-party vendors. DORA Art. 17-20 reporting may be triggered.",
-    doraArticle: "DORA Art. 19.3",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-  },
-  {
-    id: "mock-4",
-    title:
-      "NCA Germany issues clarification on cross-border incident reporting",
-    source: "BaFin",
-    category: "Jurisdiction",
-    impact: "Low",
-    summary:
-      "BaFin provides additional guidance on how German financial entities should report incidents affecting subsidiaries in non-EU countries.",
-    doraArticle: "DORA Art. 19.1",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48),
-  },
-  {
-    id: "mock-5",
-    title:
-      "EIOPA consults on draft ITS for the register of ICT third-party providers",
-    source: "EIOPA",
-    category: "Regulatory Update",
-    impact: "High",
-    summary:
-      "Insurance and reinsurance undertakings will need to maintain a comprehensive register of all ICT third-party service providers under the proposed ITS.",
-    doraArticle: "DORA Art. 28.3",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 72),
-  },
-];
 
 function impactBarColor(impact: string) {
   switch (impact) {
@@ -125,8 +60,7 @@ export default async function HorizonScanningPage() {
     take: 20,
   });
 
-  /* Merge DB alerts with mock data. DB items take priority at the top. */
-  const dbItems = dbAlerts.map((a) => ({
+  const allItems = dbAlerts.map((a) => ({
     id: a.id,
     title: a.title,
     source: a.source,
@@ -136,11 +70,6 @@ export default async function HorizonScanningPage() {
     doraArticle: a.doraArticle ?? "DORA Art. 5",
     createdAt: a.createdAt,
   }));
-
-  const allItems =
-    dbItems.length > 0
-      ? [...dbItems, ...mockAlerts]
-      : mockAlerts;
 
   const criticalCount = allItems.filter(
     (i) => i.impact === "Critical"
@@ -165,6 +94,29 @@ export default async function HorizonScanningPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ---- Left: News feed ---- */}
           <div className="lg:col-span-2 flex flex-col gap-4">
+            {allItems.length === 0 && (
+              <Card className="border-[#E3E8EF] shadow-none bg-white">
+                <CardContent className="p-12 flex flex-col items-center justify-center text-center">
+                  <div className="size-14 rounded-2xl bg-[#635BFF]/10 flex items-center justify-center mb-5">
+                    <Radar className="size-7 text-[#635BFF]" />
+                  </div>
+                  <h3 className="text-[16px] font-bold text-[#0A2540]">
+                    No horizon alerts yet
+                  </h3>
+                  <p className="text-[13px] text-muted-foreground mt-2 max-w-md leading-relaxed">
+                    When regulatory updates, cyber threats, or authority
+                    guidelines are detected, they will appear here. Learn more
+                    about DORA horizon scanning to understand how AI-powered
+                    monitoring keeps your organisation informed.
+                  </p>
+                  <div className="mt-6 pt-6 border-t border-[#F6F9FC] w-full max-w-sm">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Monitoring ESMA, EBA, EIOPA, CERT-EU, BaFin and more
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             {allItems.map((item) => (
               <Card
                 key={item.id}

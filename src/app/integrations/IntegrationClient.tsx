@@ -15,7 +15,7 @@ import {
 import { toggleIntegration } from "@/app/actions/integrations";
 import { toast } from "sonner";
 
-const CATEGORIES = ["All", "Communication", "Project Management", "IT Operations", "Security", "Cloud"];
+const CATEGORIES = ["All", "Communication", "Project Management", "IT Operations", "Security", "Cloud", "Documentation", "Legal", "Governance", "Observability"];
 
 interface Integration {
   id: string;

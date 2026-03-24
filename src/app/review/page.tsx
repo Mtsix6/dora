@@ -18,6 +18,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { formatRelativeTime } from "@/lib/format";
 import { mapContractStatus } from "@/lib/dora";
 import { cn } from "@/lib/utils";
+import { ReviewActions } from "./review-actions";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -100,6 +101,7 @@ export default async function ReviewPage() {
                           {avgConf}%
                         </div>
                         <StatusBadge status={mapContractStatus(contract.status)} />
+                        <ReviewActions contractId={contract.id} fileName={contract.fileName} />
                         <span className="text-[11px] text-muted-foreground hidden sm:inline">
                           {formatRelativeTime(contract.createdAt.toISOString())}
                         </span>

@@ -7,7 +7,6 @@ import {
   ArrowUpRight,
   FileText,
   Search,
-  Download,
   Filter,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,6 +17,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { formatRelativeTime } from "@/lib/format";
 import Link from "next/link";
+import { ExportEvidenceButton } from "./export-evidence-button";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Compliance & Governance" };
@@ -149,13 +149,7 @@ export default async function CompliancePage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                className="h-10 border-[#D0D5DD] gap-2"
-              >
-                <Download className="size-4" />
-                Export Evidence
-              </Button>
+              <ExportEvidenceButton />
               <Link href="/compliance">
                 <Button className="h-10 bg-[#635BFF] hover:bg-[#5249E0] text-white gap-2 shadow-sm font-medium">
                   Add New Control

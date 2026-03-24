@@ -111,6 +111,50 @@ export default function WorkflowsPage() {
     });
   };
 
+  const handleConfigure = () => {
+    toast.info("Workflow Settings", {
+      description:
+        "Major ICT Incident Workflow — Active. Automates Art. 19 classification, impact scoring, and NCA notification routing.",
+    });
+  };
+
+  const addNode = (
+    type: "trigger" | "ai-action" | "logic-split",
+  ) => {
+    const maxY = nodes.reduce((max, n) => Math.max(max, n.position.y), 0);
+    const id = crypto.randomUUID();
+
+    const nodeMap: Record<string, Node> = {
+      trigger: {
+        id,
+        type: "input",
+        data: { label: "New Trigger" },
+        position: { x: 250, y: maxY + 120 },
+        className:
+          "bg-[#0A2540] text-white border-none font-bold shadow-lg rounded-xl px-4 py-3 min-w-[200px] text-center",
+      },
+      "ai-action": {
+        id,
+        data: { label: "AI Action" },
+        position: { x: 250, y: maxY + 120 },
+        className:
+          "bg-gradient-to-r from-[#635BFF] to-[#4F46E5] text-white border-none font-semibold shadow-md rounded-xl px-4 py-3 min-w-[200px] text-center",
+      },
+      "logic-split": {
+        id,
+        data: { label: "Decision?" },
+        position: { x: 250, y: maxY + 120 },
+        className:
+          "bg-white text-[#0A2540] border-2 border-[#E3E8EF] font-bold shadow-sm rounded-full px-4 py-3 w-[120px] h-[120px] flex items-center justify-center text-center",
+      },
+    };
+
+    setNodes((nds) => [...nds, nodeMap[type]]);
+    toast.success("Node added", {
+      description: `Added ${type === "ai-action" ? "AI Action" : type === "logic-split" ? "Logic Split" : "Trigger"} node to canvas.`,
+    });
+  };
+
   return (
     <AppShell noPad>
       <div className="flex flex-col h-full">
@@ -151,6 +195,7 @@ export default function WorkflowsPage() {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={handleConfigure}
                 className="h-8 text-[12px] border-[#E3E8EF] text-[#0A2540]"
               >
                 <Settings className="size-3.5 mr-1.5" /> Configure
@@ -201,19 +246,19 @@ export default function WorkflowsPage() {
                 Add Node
               </p>
               <div className="flex flex-col gap-2">
-                <button className="flex items-center gap-2 text-[12px] font-medium text-[#0A2540] hover:text-[#635BFF] transition-colors p-1.5 hover:bg-[#635BFF]/5 rounded-md text-left w-full border border-dashed border-transparent hover:border-[#635BFF]/30">
+                <button onClick={() => addNode("trigger")} className="flex items-center gap-2 text-[12px] font-medium text-[#0A2540] hover:text-[#635BFF] transition-colors p-1.5 hover:bg-[#635BFF]/5 rounded-md text-left w-full border border-dashed border-transparent hover:border-[#635BFF]/30">
                   <div className="size-6 rounded bg-[#0A2540] flex items-center justify-center flex-shrink-0">
                     <PlayCircle className="size-3 text-white" />
                   </div>{" "}
                   Trigger
                 </button>
-                <button className="flex items-center gap-2 text-[12px] font-medium text-[#0A2540] hover:text-[#635BFF] transition-colors p-1.5 hover:bg-[#635BFF]/5 rounded-md text-left w-full border border-dashed border-transparent hover:border-[#635BFF]/30">
+                <button onClick={() => addNode("ai-action")} className="flex items-center gap-2 text-[12px] font-medium text-[#0A2540] hover:text-[#635BFF] transition-colors p-1.5 hover:bg-[#635BFF]/5 rounded-md text-left w-full border border-dashed border-transparent hover:border-[#635BFF]/30">
                   <div className="size-6 rounded bg-emerald-100 flex items-center justify-center flex-shrink-0">
                     <Bot className="size-3 text-emerald-600" />
                   </div>{" "}
                   AI Action
                 </button>
-                <button className="flex items-center gap-2 text-[12px] font-medium text-[#0A2540] hover:text-[#635BFF] transition-colors p-1.5 hover:bg-[#635BFF]/5 rounded-md text-left w-full border border-dashed border-transparent hover:border-[#635BFF]/30">
+                <button onClick={() => addNode("logic-split")} className="flex items-center gap-2 text-[12px] font-medium text-[#0A2540] hover:text-[#635BFF] transition-colors p-1.5 hover:bg-[#635BFF]/5 rounded-md text-left w-full border border-dashed border-transparent hover:border-[#635BFF]/30">
                   <div className="size-6 rounded bg-amber-100 flex items-center justify-center flex-shrink-0">
                     <GitBranch className="size-3 text-amber-600" />
                   </div>{" "}
