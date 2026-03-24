@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
@@ -26,6 +27,7 @@ interface Integration {
 }
 
 export function IntegrationClient({ initialIntegrations }: { initialIntegrations: Integration[] }) {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isPending, startTransition] = useTransition();
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -36,7 +38,7 @@ export function IntegrationClient({ initialIntegrations }: { initialIntegrations
 
   async function handleToggle(id: string, name: string, currentStatus: string) {
     if (currentStatus === "Enterprise Only") {
-      toast.info("Enterprise Feature", { description: "This integration requires an Enterprise plan." });
+      router.push("/pricing");
       return;
     }
 
@@ -166,10 +168,37 @@ export function IntegrationClient({ initialIntegrations }: { initialIntegrations
                   </p>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
-                  <Button className="flex-1 md:flex-none h-12 px-8 bg-[#635BFF] hover:bg-[#5249E0] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-95">
+                  <Button
+                    className="flex-1 md:flex-none h-12 px-8 bg-[#635BFF] hover:bg-[#5249E0] text-white font-bold rounded-xl shadow-lg transition-transform active:scale-95"
+                    onClick={() => {
+                      const quickstart = [
+                        "# DORA ROI Developer Quickstart",
+                        "",
+                        "Base URLs:",
+                        "- GET /api/contracts",
+                        "- GET /api/audit-log",
+                        "- GET /api/notifications",
+                        "",
+                        "Use an API key generated in Enterprise Management for future connector support.",
+                      ].join("\\n");
+                      const blob = new Blob([quickstart], { type: "text/markdown;charset=utf-8" });
+                      const url = URL.createObjectURL(blob);
+                      const anchor = document.createElement("a");
+                      anchor.href = url;
+                      anchor.download = "dora-roi-developer-quickstart.md";
+                      anchor.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
                     Developer Docs
                   </Button>
-                  <Button variant="outline" className="flex-1 md:flex-none h-12 px-8 bg-transparent border-white/20 text-white hover:bg-white/10 font-bold rounded-xl">
+                  <Button
+                    variant="outline"
+                    className="flex-1 md:flex-none h-12 px-8 bg-transparent border-white/20 text-white hover:bg-white/10 font-bold rounded-xl"
+                    onClick={() => {
+                      window.location.href = "mailto:sales@dora-roi.eu?subject=Custom%20Integration%20Request";
+                    }}
+                  >
                      Request Feature
                   </Button>
                 </div>

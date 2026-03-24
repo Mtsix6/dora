@@ -95,9 +95,7 @@ export default function PricingPage() {
     }
 
     if (plan.action === "contact") {
-      toast.info("Contact our sales team", {
-        description: "Email sales@dora-roi.eu for Enterprise pricing and a custom demo.",
-      });
+      window.location.href = "mailto:sales@dora-roi.eu?subject=Enterprise%20Pricing%20Request";
       return;
     }
 

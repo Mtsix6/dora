@@ -248,12 +248,11 @@ export default async function DashboardPage() {
           </div>
           <div className="flex gap-2">
             <UploadDialog />
-            <Link href="/extraction">
-              <Button className="h-9 font-medium text-[13px] bg-[#0A2540] hover:bg-[#0A2540]/90 text-white shadow-lg shadow-[#0A2540]/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
-                <Bot className="size-4 mr-2" />
-                New extraction
-              </Button>
-            </Link>
+            <UploadDialog
+              triggerLabel="New extraction"
+              openLatestOnSuccess
+              triggerClassName="h-9 font-medium text-[13px] bg-[#0A2540] text-white shadow-lg shadow-[#0A2540]/20 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#0A2540] hover:bg-[#0A2540]/90 hover:shadow-xl"
+            />
           </div>
         </div>
 

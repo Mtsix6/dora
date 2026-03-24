@@ -6,6 +6,8 @@ import type { ExtractionDocument } from "@/types/extraction";
 const EMPTY_DOCUMENT: ExtractionDocument = {
   id: "",
   filename: "",
+  fileUrl: "",
+  mimeType: "",
   status: "pending",
   uploadedAt: "",
   fields: {

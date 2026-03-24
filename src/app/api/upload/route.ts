@@ -1,62 +1,53 @@
+import crypto from "node:crypto";
+import path from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { inngest } from "@/inngest/client";
 
 export const dynamic = "force-dynamic";
-import { inngest } from "@/inngest/client";
-import path from "node:path";
-import { writeFile, mkdir } from "node:fs/promises";
-import crypto from "node:crypto";
 
+const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx", ".txt", ".md"] as const;
 const ALLOWED_MIME_TYPES = [
   "application/pdf",
+  "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "text/plain",
+  "text/markdown",
+  "",
 ] as const;
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   try {
-    // ── Auth guard (session-based) ──
     const session = await getServerSession(authOptions);
     if (!session?.user?.id || !session?.user?.workspaceId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
-    const workspaceId = session.user.workspaceId;
-
-    // ── Parse multipart form data ──
     const formData = await request.formData();
     const file = formData.get("file");
-
     if (!file || !(file instanceof File)) {
-      return NextResponse.json(
-        { error: "No file provided. Use form field 'file'." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "No file provided. Use the 'file' field." }, { status: 400 });
     }
 
-    // ── Validate MIME type ──
-    if (
-      !ALLOWED_MIME_TYPES.includes(
-        file.type as (typeof ALLOWED_MIME_TYPES)[number],
-      )
-    ) {
+    const extension = path.extname(file.name).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(extension as (typeof ALLOWED_EXTENSIONS)[number])) {
       return NextResponse.json(
-        {
-          error: `Unsupported file type: ${file.type}. Allowed: ${ALLOWED_MIME_TYPES.join(", ")}`,
-        },
+        { error: `Unsupported file extension: ${extension || "unknown"}. Allowed: ${ALLOWED_EXTENSIONS.join(", ")}` },
         { status: 415 },
       );
     }
 
-    // ── Validate file size ──
+    if (!ALLOWED_MIME_TYPES.includes(file.type as (typeof ALLOWED_MIME_TYPES)[number])) {
+      return NextResponse.json(
+        { error: `Unsupported file type: ${file.type || "unknown"}. Allowed document formats only.` },
+        { status: 415 },
+      );
+    }
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: `File exceeds maximum size of ${MAX_FILE_SIZE / 1024 / 1024} MB` },
@@ -64,48 +55,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Persist file to disk (swap for S3/R2 in production) ──
-    const fileId = crypto.randomUUID();
-    const ext = path.extname(file.name) || ".pdf";
-    const safeFileName = `${fileId}${ext}`;
-    const uploadDir = path.join(process.cwd(), "uploads", workspaceId);
-
+    const safeFileName = `${crypto.randomUUID()}${extension || ".bin"}`;
+    const uploadDir = path.join(process.cwd(), "uploads", session.user.workspaceId);
     await mkdir(uploadDir, { recursive: true });
 
-    const bytes = new Uint8Array(await file.arrayBuffer());
     const filePath = path.join(uploadDir, safeFileName);
+    const bytes = new Uint8Array(await file.arrayBuffer());
     await writeFile(filePath, bytes);
 
-    const fileUrl = `/uploads/${workspaceId}/${safeFileName}`;
+    const fileUrl = `/uploads/${session.user.workspaceId}/${safeFileName}`;
 
-    // ── Create Contract record ──
     const contract = await prisma.contract.create({
       data: {
         fileName: file.name,
         fileUrl,
-        mimeType: file.type,
+        mimeType: file.type || "application/octet-stream",
         status: "PENDING",
-        uploadedById: userId,
-        workspaceId,
+        uploadedById: session.user.id,
+        workspaceId: session.user.workspaceId,
       },
     });
 
-    // ── Log activity ──
     await prisma.activity.create({
       data: {
         action: "Document uploaded",
-        userId,
+        userId: session.user.id,
         contractId: contract.id,
-        workspaceId,
+        workspaceId: session.user.workspaceId,
       },
     });
 
-    // ── Trigger Inngest background job ──
     await inngest.send({
       name: "dora.contract.uploaded",
       data: {
         contractId: contract.id,
-        workspaceId,
+        workspaceId: session.user.workspaceId,
         fileUrl,
       },
     });
@@ -121,9 +105,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("[POST /api/upload] Unhandled error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

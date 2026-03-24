@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useExtractionStore } from "@/store/extraction-store";
 import { ConfidenceBadge } from "@/components/confidence-badge";
@@ -103,6 +104,7 @@ const FIELD_CONFIGS: FieldConfig[] = [
 ];
 
 export function ExtractionFormPanel() {
+  const router = useRouter();
   const {
     document,
     updateField,
@@ -148,7 +150,7 @@ export function ExtractionFormPanel() {
     approveDocument();
     toast.success("Document approved", {
       description: `${document.filename} has been approved and added to the register.`,
-      action: { label: "View register", onClick: () => {} },
+      action: { label: "View register", onClick: () => router.push("/contracts") },
     });
   };
 
@@ -370,7 +372,7 @@ export function ExtractionFormPanel() {
           <button
             type="button"
             className="ml-auto flex items-center gap-0.5 text-[#635BFF] hover:underline font-medium whitespace-nowrap"
-            onClick={() => toast.info("Register view coming soon")}
+            onClick={() => router.push("/contracts")}
           >
             View register <ChevronRight className="size-3" />
           </button>

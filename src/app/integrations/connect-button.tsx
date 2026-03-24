@@ -1,39 +1,56 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { Settings2, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toggleIntegration } from "@/app/actions/integrations";
 import { toast } from "sonner";
 
 interface IntegrationConnectButtonProps {
   provider: string;
   label: string;
   variant: "default" | "outline";
+  name?: string;
+  enterpriseOnly?: boolean;
 }
 
 export function IntegrationConnectButton({
   provider,
   label,
   variant,
+  name,
+  enterpriseOnly = false,
 }: IntegrationConnectButtonProps) {
+  const router = useRouter();
+
   return (
     <Button
       variant={variant === "default" ? "default" : "outline"}
       size="sm"
       className={
         variant === "default"
-          ? "w-full h-8 text-[12px] font-bold bg-[#635BFF] hover:bg-[#635BFF]/90 text-white shadow-lg shadow-[#635BFF]/20"
-          : "w-full h-8 text-[12px] font-bold border-[#E3E8EF] text-[#0A2540] hover:bg-[#F6F9FC]"
+          ? "h-8 w-full bg-[#635BFF] text-[12px] font-bold text-white shadow-lg shadow-[#635BFF]/20 hover:bg-[#635BFF]/90"
+          : "h-8 w-full border-[#E3E8EF] text-[12px] font-bold text-[#0A2540] hover:bg-[#F6F9FC]"
       }
-      onClick={() => {
-        toast.info("Integration setup coming soon", {
-          description: `${provider.charAt(0).toUpperCase() + provider.slice(1)} integration will be available in a future update.`,
-        });
+      onClick={async () => {
+        if (enterpriseOnly) {
+          router.push("/pricing");
+          return;
+        }
+
+        try {
+          await toggleIntegration(provider, name ?? label);
+          toast.success(`${label} updated`);
+          router.refresh();
+        } catch {
+          toast.error(`Failed to update ${label}`);
+        }
       }}
     >
       {variant === "default" ? (
-        <Plus className="size-3.5 mr-1.5" />
+        <Plus className="mr-1.5 size-3.5" />
       ) : (
-        <Settings2 className="size-3.5 mr-1.5" />
+        <Settings2 className="mr-1.5 size-3.5" />
       )}
       {label}
     </Button>

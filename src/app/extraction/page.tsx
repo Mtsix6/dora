@@ -8,6 +8,40 @@ import { ExtractionFormPanel } from "@/components/extraction-form-panel";
 import { useExtractionStore } from "@/store/extraction-store";
 import { Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { mapContractStatus } from "@/lib/dora";
+import type { ConfidenceLevel, DoraExtractionFields } from "@/types/extraction";
+
+function toField(value: unknown, fallback = "") {
+  const rawValue =
+    typeof value === "object" && value !== null && "value" in value
+      ? (value as { value?: unknown }).value
+      : value;
+  const rawConfidence =
+    typeof value === "object" && value !== null && "confidence" in value
+      ? (value as { confidence?: unknown }).confidence
+      : 0;
+  const confidenceValue =
+    typeof rawConfidence === "number" ? Math.max(0, Math.min(100, rawConfidence)) : 0;
+  const level: ConfidenceLevel =
+    confidenceValue >= 80 ? "high" : confidenceValue >= 60 ? "medium" : "low";
+
+  return {
+    value: typeof rawValue === "string" ? rawValue : fallback,
+    confidence: { value: confidenceValue, level },
+    isEdited: false,
+  };
+}
+
+function normalizeFields(extractedData: unknown): DoraExtractionFields {
+  const data = (extractedData ?? {}) as Record<string, unknown>;
+  return {
+    entityName: toField(data.entityName),
+    leiCode: toField(data.leiCode),
+    criticalFunctionTag: toField(data.criticalFunctionTag),
+    startDate: toField(data.startDate ?? data.contractStartDate),
+    endDate: toField(data.endDate ?? data.contractEndDate),
+  };
+}
 
 function ExtractionContent() {
   const searchParams = useSearchParams();
@@ -33,9 +67,11 @@ function ExtractionContent() {
         setDocument({
           id: data.id,
           filename: data.fileName,
-          status: data.status.toLowerCase() as any,
+          fileUrl: `/api/contracts/${data.id}/file`,
+          mimeType: data.mimeType,
+          status: mapContractStatus(data.status),
           uploadedAt: data.createdAt,
-          fields: (data.extractedData as any)?.fields || (data.extractedData as any) || {},
+          fields: normalizeFields(data.extractedData),
         });
       } catch (err) {
         console.error(err);

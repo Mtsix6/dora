@@ -22,6 +22,8 @@ export interface DoraExtractionFields {
 export interface ExtractionDocument {
   id: string;
   filename: string;
+  fileUrl?: string;
+  mimeType?: string;
   status: "pending" | "extracting" | "review" | "approved" | "rejected";
   uploadedAt: string;
   fields: DoraExtractionFields;

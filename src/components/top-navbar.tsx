@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useExtractionStore } from "@/store/extraction-store";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { EASE_OUT_EXPO } from "@/lib/motion";
@@ -196,12 +195,7 @@ export function TopNavbar() {
         <Tooltip>
           <TooltipTrigger
             className={iconBtnClass}
-            onClick={() =>
-              toast.info("Help & documentation", {
-                description: "DORA RoI Automator documentation available at docs.dora-roi.eu",
-                action: { label: "Open docs", onClick: () => {} },
-              })
-            }
+            onClick={() => window.open("https://platform.openai.com/docs", "_blank", "noopener,noreferrer")}
           >
             <HelpCircle className="size-4" />
           </TooltipTrigger>

@@ -1,9 +1,8 @@
 "use client";
 
 import {
-  ChevronLeft,
-  ChevronRight,
   Download,
+  ExternalLink,
   FileText,
   Maximize2,
   Minimize2,
@@ -13,49 +12,90 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useExtractionStore } from "@/store/extraction-store";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const toolbarBtnClass =
   "h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-[#0A2540] hover:bg-[#F6F9FC] transition-colors disabled:opacity-40 disabled:pointer-events-none";
 
 export function PdfViewerPanel() {
   const { document: extractionDoc } = useExtractionStore();
-  const hasDocument = !!extractionDoc.id;
-
+  const hasDocument = Boolean(extractionDoc.id);
   const [zoom, setZoom] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [textPreview, setTextPreview] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleZoomIn = () => setZoom((z) => Math.min(z + 10, 200));
-  const handleZoomOut = () => setZoom((z) => Math.max(z - 10, 50));
+  const isPdf = extractionDoc.mimeType === "application/pdf";
+  const isText = extractionDoc.mimeType === "text/plain";
+  const canPreviewInline = isPdf || isText;
+  const viewerStyle = useMemo(
+    () => ({ transform: `scale(${zoom / 100})`, transformOrigin: "top center" as const }),
+    [zoom],
+  );
+
+  useEffect(() => {
+    if (!isText || !extractionDoc.fileUrl) {
+      setTextPreview(null);
+      return;
+    }
+
+    fetch(extractionDoc.fileUrl)
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load text preview");
+        }
+        return response.text();
+      })
+      .then((text) => setTextPreview(text))
+      .catch(() => {
+        setTextPreview(null);
+      });
+  }, [extractionDoc.fileUrl, isText]);
+
+  const handleZoomIn = () => setZoom((value) => Math.min(value + 10, 200));
+  const handleZoomOut = () => setZoom((value) => Math.max(value - 10, 50));
   const handleZoomReset = () => setZoom(100);
 
   const handleDownload = () => {
-    if (!hasDocument) return;
-    toast.success("Download started", { description: `${extractionDoc.filename}` });
+    if (!hasDocument || !extractionDoc.fileUrl) {
+      return;
+    }
+
+    globalThis.open(extractionDoc.fileUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleOpenExternal = () => {
+    if (!hasDocument || !extractionDoc.fileUrl) {
+      return;
+    }
+
+    globalThis.open(extractionDoc.fileUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleToggleFullscreen = () => {
     if (!isFullscreen) {
       containerRef.current?.requestFullscreen?.().catch(() =>
-        toast.error("Fullscreen not supported in this browser")
+        toast.error("Fullscreen not supported in this browser"),
       );
     } else {
       globalThis.document.exitFullscreen?.();
     }
-    setIsFullscreen((f) => !f);
+    setIsFullscreen((value) => !value);
   };
 
   const handleSearchOpen = () => {
+    if (!isText) {
+      toast.info("Inline search is available for text files only.");
+      return;
+    }
     setShowSearch(true);
     setTimeout(() => searchInputRef.current?.focus(), 50);
   };
@@ -65,42 +105,61 @@ export function PdfViewerPanel() {
     setSearchQuery("");
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    toast.info(`Searching for "${searchQuery}"`);
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!searchQuery.trim()) {
+      return;
+    }
+
+    if (!isText || !textPreview) {
+      toast.info("Search preview is only available for text uploads.");
+      return;
+    }
+
+    const containsText = textPreview.toLowerCase().includes(searchQuery.toLowerCase());
+    toast[containsText ? "success" : "error"](
+      containsText ? `Found "${searchQuery}" in the document.` : `No match for "${searchQuery}".`,
+    );
   };
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "f") {
-        e.preventDefault();
+    const handler = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "f") {
+        event.preventDefault();
         handleSearchOpen();
       }
-      if (e.key === "Escape") handleSearchClose();
-      if ((e.ctrlKey || e.metaKey) && e.key === "=") { e.preventDefault(); handleZoomIn(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === "-") { e.preventDefault(); handleZoomOut(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === "0") { e.preventDefault(); handleZoomReset(); }
+      if (event.key === "Escape") handleSearchClose();
+      if ((event.ctrlKey || event.metaKey) && event.key === "=") {
+        event.preventDefault();
+        handleZoomIn();
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === "-") {
+        event.preventDefault();
+        handleZoomOut();
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === "0") {
+        event.preventDefault();
+        handleZoomReset();
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [searchQuery]);
+  }, [isText]);
 
-  // Empty state
   if (!hasDocument) {
     return (
-      <div ref={containerRef} className="flex flex-col h-full bg-[#F6F9FC] border-r border-[#E3E8EF]">
-        <div className="flex-shrink-0 h-10 flex items-center gap-2 px-3 border-b border-[#E3E8EF] bg-white">
-          <FileText className="size-3.5 text-muted-foreground flex-shrink-0" />
+      <div ref={containerRef} className="flex h-full flex-col border-r border-[#E3E8EF] bg-[#F6F9FC]">
+        <div className="flex h-10 flex-shrink-0 items-center gap-2 border-b border-[#E3E8EF] bg-white px-3">
+          <FileText className="size-3.5 flex-shrink-0 text-muted-foreground" />
           <span className="text-[12px] text-muted-foreground">No document selected</span>
         </div>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-xs">
-            <div className="mx-auto size-14 rounded-2xl bg-[#635BFF]/5 border border-[#635BFF]/10 flex items-center justify-center mb-4">
+        <div className="flex flex-1 items-center justify-center">
+          <div className="max-w-xs text-center">
+            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl border border-[#635BFF]/10 bg-[#635BFF]/5">
               <Upload className="size-6 text-[#635BFF]/50" />
             </div>
             <p className="text-[14px] font-semibold text-[#0A2540]">No document loaded</p>
-            <p className="text-[12px] text-muted-foreground mt-1">
+            <p className="mt-1 text-[12px] text-muted-foreground">
               Upload a contract from the Contracts page to view and extract it here.
             </p>
           </div>
@@ -110,40 +169,44 @@ export function PdfViewerPanel() {
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col h-full bg-[#F6F9FC] border-r border-[#E3E8EF]">
-      {/* PDF toolbar */}
-      <div className="flex-shrink-0 h-10 flex items-center gap-2 px-3 border-b border-[#E3E8EF] bg-white">
-        <FileText className="size-3.5 text-[#635BFF] flex-shrink-0" />
-        <span className="text-[12px] font-medium text-[#0A2540] truncate flex-1">
+    <div ref={containerRef} className="flex h-full flex-col border-r border-[#E3E8EF] bg-[#F6F9FC]">
+      <div className="flex h-10 flex-shrink-0 items-center gap-2 border-b border-[#E3E8EF] bg-white px-3">
+        <FileText className="size-3.5 flex-shrink-0 text-[#635BFF]" />
+        <span className="flex-1 truncate text-[12px] font-medium text-[#0A2540]">
           {extractionDoc.filename}
         </span>
 
-        {/* Inline search bar */}
         {showSearch && (
-          <form onSubmit={handleSearch} className="flex items-center gap-1 flex-shrink-0">
+          <form onSubmit={handleSearch} className="flex flex-shrink-0 items-center gap-1">
             <Input
               ref={searchInputRef}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search document…"
-              className="h-6 w-40 text-[11px] border-[#E3E8EF] bg-[#F6F9FC] focus-visible:ring-[#635BFF]/30 focus-visible:border-[#635BFF]"
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search text..."
+              className="h-6 w-40 border-[#E3E8EF] bg-[#F6F9FC] text-[11px] focus-visible:border-[#635BFF] focus-visible:ring-[#635BFF]/30"
             />
-            <button type="submit" className={toolbarBtnClass}><Search className="size-3" /></button>
-            <button type="button" className={toolbarBtnClass} onClick={handleSearchClose}><X className="size-3" /></button>
+            <button type="submit" className={toolbarBtnClass}>
+              <Search className="size-3" />
+            </button>
+            <button type="button" className={toolbarBtnClass} onClick={handleSearchClose}>
+              <X className="size-3" />
+            </button>
           </form>
         )}
 
-        {/* Toolbar icons */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center gap-0.5">
           {!showSearch && (
             <>
               <Tooltip>
-                <TooltipTrigger className={toolbarBtnClass} onClick={handleSearchOpen}>
+                <TooltipTrigger
+                  className={cn(toolbarBtnClass, !isText && "opacity-40 pointer-events-none")}
+                  onClick={handleSearchOpen}
+                >
                   <Search className="size-3" />
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Search (Ctrl+F)</TooltipContent>
+                <TooltipContent side="bottom">Search text file</TooltipContent>
               </Tooltip>
-              <div className="h-3 w-px bg-[#E3E8EF] mx-1" />
+              <div className="mx-1 h-3 w-px bg-[#E3E8EF]" />
             </>
           )}
 
@@ -159,7 +222,7 @@ export function PdfViewerPanel() {
           </Tooltip>
 
           <button
-            className="text-[11px] tabular-nums font-medium text-muted-foreground w-9 text-center select-none hover:text-[#0A2540] transition-colors cursor-pointer"
+            className="w-9 cursor-pointer select-none text-center text-[11px] font-medium tabular-nums text-muted-foreground transition-colors hover:text-[#0A2540]"
             onClick={handleZoomReset}
             title="Reset zoom"
           >
@@ -177,13 +240,20 @@ export function PdfViewerPanel() {
             <TooltipContent side="bottom">Zoom in</TooltipContent>
           </Tooltip>
 
-          <div className="h-3 w-px bg-[#E3E8EF] mx-1" />
+          <div className="mx-1 h-3 w-px bg-[#E3E8EF]" />
 
           <Tooltip>
             <TooltipTrigger className={toolbarBtnClass} onClick={handleDownload}>
               <Download className="size-3" />
             </TooltipTrigger>
-            <TooltipContent side="bottom">Download PDF</TooltipContent>
+            <TooltipContent side="bottom">Open or download</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger className={toolbarBtnClass} onClick={handleOpenExternal}>
+              <ExternalLink className="size-3" />
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Open in new tab</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -197,15 +267,34 @@ export function PdfViewerPanel() {
         </div>
       </div>
 
-      {/* PDF content area — will render actual PDF when file URL is available */}
-      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center py-6 px-4">
-        <div className="text-center max-w-xs">
-          <FileText className="size-10 text-[#635BFF]/30 mx-auto mb-3" />
-          <p className="text-[13px] font-medium text-[#0A2540]">{extractionDoc.filename}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">
-            PDF preview will be available once processing completes.
-          </p>
-        </div>
+      <div className="flex flex-1 overflow-auto p-4">
+        {!canPreviewInline && (
+          <div className="m-auto max-w-sm text-center">
+            <FileText className="mx-auto mb-3 size-10 text-[#635BFF]/30" />
+            <p className="text-[13px] font-medium text-[#0A2540]">{extractionDoc.filename}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              This format cannot be previewed inline yet. Use open or download to inspect it.
+            </p>
+          </div>
+        )}
+
+        {isPdf && extractionDoc.fileUrl && (
+          <div className="min-h-full w-full origin-top overflow-auto" style={viewerStyle}>
+            <iframe
+              src={extractionDoc.fileUrl}
+              title={extractionDoc.filename}
+              className="h-[calc(100vh-190px)] w-full rounded-xl border border-[#E3E8EF] bg-white"
+            />
+          </div>
+        )}
+
+        {isText && (
+          <div className="min-h-full w-full origin-top overflow-auto" style={viewerStyle}>
+            <pre className="min-h-[calc(100vh-190px)] whitespace-pre-wrap rounded-xl border border-[#E3E8EF] bg-white p-4 text-[12px] leading-6 text-[#0A2540]">
+              {textPreview || "Loading text preview..."}
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   );
