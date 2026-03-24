@@ -103,7 +103,7 @@ export async function GET() {
         ),
       };
     })
-    .sort((a: any, b: any) => b.count - a.count)
+    .sort((a: any, b: any) => a.days - b.days)
     .slice(0, 5);
 
   return NextResponse.json({

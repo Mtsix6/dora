@@ -55,6 +55,31 @@ export async function PATCH(
       data: { status: "APPROVED" },
     });
 
+    // Create Notification
+    await prisma.notification.create({
+      data: {
+        userId: session.user.id,
+        workspaceId: session.user.workspaceId,
+        title: "Contract Approved",
+        message: `The contract "${existing.fileName}" has been approved and added to the register.`,
+        type: "success",
+        category: "contract",
+        actionUrl: `/extraction?id=${id}`,
+      },
+    });
+
+    // Detailed Audit Log
+    await prisma.auditLog.create({
+      data: {
+        action: "APPROVE",
+        entity: "contract",
+        entityId: id,
+        userId: session.user.id,
+        workspaceId: session.user.workspaceId,
+        metadata: { fileName: existing.fileName },
+      },
+    });
+
     await prisma.activity.create({
       data: {
         action: "Document approved",
@@ -71,6 +96,31 @@ export async function PATCH(
     const contract = await prisma.contract.update({
       where: { id },
       data: { status: "REJECTED" },
+    });
+
+    // Create Notification
+    await prisma.notification.create({
+      data: {
+        userId: session.user.id,
+        workspaceId: session.user.workspaceId,
+        title: "Contract Rejected",
+        message: `The contract "${existing.fileName}" was rejected during review.`,
+        type: "error",
+        category: "contract",
+        actionUrl: `/extraction?id=${id}`,
+      },
+    });
+
+    // Detailed Audit Log
+    await prisma.auditLog.create({
+      data: {
+        action: "REJECT",
+        entity: "contract",
+        entityId: id,
+        userId: session.user.id,
+        workspaceId: session.user.workspaceId,
+        metadata: { fileName: existing.fileName },
+      },
     });
 
     await prisma.activity.create({
@@ -93,6 +143,18 @@ export async function PATCH(
     const contract = await prisma.contract.update({
       where: { id },
       data: { extractedData: updatedData },
+    });
+
+    // Audit Log for field updates
+    await prisma.auditLog.create({
+      data: {
+        action: "UPDATE_FIELDS",
+        entity: "contract",
+        entityId: id,
+        userId: session.user.id,
+        workspaceId: session.user.workspaceId,
+        metadata: { fileName: existing.fileName, fieldsUpdated: Object.keys(fields) },
+      },
     });
 
     await prisma.activity.create({

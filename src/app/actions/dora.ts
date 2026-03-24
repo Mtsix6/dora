@@ -49,7 +49,7 @@ export async function createIncident(data: {
 
   const workspaceId = session.user.workspaceId;
 
-  return prisma.incident.create({
+  const incident = await prisma.incident.create({
     data: {
       title: data.title,
       severity: data.severity,
@@ -59,6 +59,33 @@ export async function createIncident(data: {
       workspaceId,
     },
   });
+
+  // Create Notification
+  await prisma.notification.create({
+    data: {
+      userId: session.user.id,
+      workspaceId,
+      title: "Incident Reported",
+      message: `New incident "${data.title}" (${data.severity}) has been logged.`,
+      type: data.severity === "Critical" ? "error" : "warning",
+      category: "incident",
+      actionUrl: "/incidents",
+    },
+  });
+
+  // Audit Log
+  await prisma.auditLog.create({
+    data: {
+      action: "REPORT_INCIDENT",
+      entity: "incident",
+      entityId: incident.id,
+      userId: session.user.id,
+      workspaceId,
+      metadata: { title: data.title, severity: data.severity },
+    },
+  });
+
+  return incident;
 }
 
 export async function createIctAsset(data: {
@@ -74,7 +101,7 @@ export async function createIctAsset(data: {
 
   const workspaceId = session.user.workspaceId;
 
-  return prisma.ictAsset.create({
+  const asset = await prisma.ictAsset.create({
     data: {
       name: data.name,
       category: data.category,
@@ -83,6 +110,20 @@ export async function createIctAsset(data: {
       workspaceId,
     },
   });
+
+  // Audit Log
+  await prisma.auditLog.create({
+    data: {
+      action: "CREATE_ASSET",
+      entity: "ictAsset",
+      entityId: asset.id,
+      userId: session.user.id,
+      workspaceId,
+      metadata: { name: data.name },
+    },
+  });
+
+  return asset;
 }
 
 export async function createVendor(data: {
@@ -99,7 +140,7 @@ export async function createVendor(data: {
 
   const workspaceId = session.user.workspaceId;
 
-  return prisma.vendor.create({
+  const vendor = await prisma.vendor.create({
     data: {
       name: data.name,
       category: data.category,
@@ -109,6 +150,20 @@ export async function createVendor(data: {
       workspaceId,
     },
   });
+
+  // Audit Log
+  await prisma.auditLog.create({
+    data: {
+      action: "CREATE_VENDOR",
+      entity: "vendor",
+      entityId: vendor.id,
+      userId: session.user.id,
+      workspaceId,
+      metadata: { name: data.name },
+    },
+  });
+
+  return vendor;
 }
 
 export async function createPolicy(data: {
@@ -124,7 +179,7 @@ export async function createPolicy(data: {
 
   const workspaceId = session.user.workspaceId;
 
-  return prisma.policyDocument.create({
+  const policy = await prisma.policyDocument.create({
     data: {
       title: data.title,
       type: data.type,
@@ -133,6 +188,20 @@ export async function createPolicy(data: {
       workspaceId,
     },
   });
+
+  // Audit Log
+  await prisma.auditLog.create({
+    data: {
+      action: "CREATE_POLICY",
+      entity: "policyDocument",
+      entityId: policy.id,
+      userId: session.user.id,
+      workspaceId,
+      metadata: { title: data.title, version: data.version },
+    },
+  });
+
+  return policy;
 }
 
 export async function createResilienceTest(data: {
@@ -148,7 +217,7 @@ export async function createResilienceTest(data: {
 
   const workspaceId = session.user.workspaceId;
 
-  return prisma.resilienceTest.create({
+  const test = await prisma.resilienceTest.create({
     data: {
       name: data.name,
       type: data.type,
@@ -158,6 +227,20 @@ export async function createResilienceTest(data: {
       workspaceId,
     },
   });
+
+  // Audit Log
+  await prisma.auditLog.create({
+    data: {
+      action: "SCHEDULE_TEST",
+      entity: "resilienceTest",
+      entityId: test.id,
+      userId: session.user.id,
+      workspaceId,
+      metadata: { name: data.name, type: data.type },
+    },
+  });
+
+  return test;
 }
 
 export async function updateIncidentStatus(

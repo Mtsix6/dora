@@ -91,6 +91,44 @@ export default async function DashboardPage() {
     ? Math.round((approvedThisMonth / totalContracts) * 100)
     : 0;
 
+  // ── Pillar coverage from ComplianceCheck model ──
+  const complianceChecks = await prisma.complianceCheck.findMany({
+    where: { workspaceId },
+  });
+
+  const PILLAR_IDS = ["ict_risk", "incident_reporting", "resilience_testing", "third_party_risk", "information_sharing"] as const;
+  const PILLAR_LABELS: Record<string, string> = {
+    ict_risk: "Risk Mgmt",
+    incident_reporting: "Incidents",
+    resilience_testing: "Testing",
+    third_party_risk: "3rd Party",
+    information_sharing: "Info Share",
+  };
+
+  const pillarCoverage = PILLAR_IDS.map((pillar) => {
+    const checks = complianceChecks.filter((c) => c.pillar === pillar);
+    const compliant = checks.filter((c) => c.status === "Compliant").length;
+    const total = checks.length;
+    return {
+      id: pillar,
+      label: PILLAR_LABELS[pillar],
+      pct: total > 0 ? Math.round((compliant / total) * 100) : 0,
+    };
+  });
+
+  // ── ICT asset risk heatmap data ──
+  const ictAssets = await prisma.ictAsset.findMany({
+    where: { workspaceId },
+    orderBy: { createdAt: "desc" },
+    take: 28,
+  });
+
+  // ── Active incidents for heatmap stats ──
+  const [openIncidents, criticalIncidents] = await Promise.all([
+    prisma.incident.count({ where: { workspaceId, resolvedAt: null } }),
+    prisma.incident.count({ where: { workspaceId, severity: "Critical", resolvedAt: null } }),
+  ]);
+
   // Calculate avgConfidence from extractedData JSON
   const contractsWithData = allContracts.filter((c: any) => c.extractedData);
   let avgConfidence = 0;
@@ -314,7 +352,7 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Compliance Radar Widget */}
+          {/* Compliance Radar Widget — data-driven from ComplianceCheck */}
           <Card className="border-[#E3E8EF] shadow-none bg-white transition-all duration-300 hover:shadow-lg relative overflow-hidden">
              <CardHeader className="pb-2 pt-5 px-5">
                 <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -322,80 +360,108 @@ export default async function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-5 flex flex-col items-center justify-center min-h-[220px]">
-                 <div className="relative size-40">
-                    <svg viewBox="0 0 100 100" className="size-full -rotate-90">
-                       {/* Background Circles */}
-                       <circle cx="50" cy="50" r="48" fill="none" stroke="#E3E8EF" strokeWidth="0.5" />
-                       <circle cx="50" cy="50" r="36" fill="none" stroke="#E3E8EF" strokeWidth="0.5" />
-                       <circle cx="50" cy="50" r="24" fill="none" stroke="#E3E8EF" strokeWidth="0.5" />
-                       <circle cx="50" cy="50" r="12" fill="none" stroke="#E3E8EF" strokeWidth="0.5" />
-                       
-                       {/* Axis Lines */}
-                       {[0, 72, 144, 216, 288].map(angle => (
-                         <line 
-                           key={angle}
-                           x1="50" y1="50" 
-                           x2={50 + 48 * Math.cos(angle * Math.PI / 180)} 
-                           y2={50 + 48 * Math.sin(angle * Math.PI / 180)} 
-                           stroke="#E3E8EF" strokeWidth="0.5" 
+                 {(() => {
+                   const angles = [90, 162, 234, 306, 18]; // 5 axes evenly spaced
+                   const R = 48;
+                   const radarPoints = pillarCoverage.map((p, i) => {
+                     const r = (p.pct / 100) * R;
+                     const a = (angles[i] * Math.PI) / 180;
+                     return `${50 + r * Math.cos(a)},${50 - r * Math.sin(a)}`;
+                   }).join(" ");
+                   return (
+                     <div className="relative size-40">
+                       <svg viewBox="0 0 100 100" className="size-full">
+                         {[48, 36, 24, 12].map(r => (
+                           <circle key={r} cx="50" cy="50" r={r} fill="none" stroke="#E3E8EF" strokeWidth="0.5" />
+                         ))}
+                         {angles.map((angle, i) => (
+                           <line
+                             key={angle}
+                             x1="50" y1="50"
+                             x2={50 + R * Math.cos((angle * Math.PI) / 180)}
+                             y2={50 - R * Math.sin((angle * Math.PI) / 180)}
+                             stroke="#E3E8EF" strokeWidth="0.5"
+                           />
+                         ))}
+                         <polygon
+                           points={radarPoints}
+                           fill="rgba(99, 91, 255, 0.2)"
+                           stroke="#635BFF"
+                           strokeWidth="1.5"
                          />
-                       ))}
-
-                       {/* Data Shape (Pillars) */}
-                       <polygon 
-                         points="50,10 85,35 75,80 30,75 20,40"
-                         fill="rgba(99, 91, 255, 0.2)"
-                         stroke="#635BFF"
-                         strokeWidth="1.5"
-                         className="animate-pulse"
-                       />
-                       
-                       {/* Labels (Conceptual) */}
-                       <text x="50" y="5" textAnchor="middle" fontSize="4" fill="#667085" className="rotate-90 origin-center">RM</text>
-                       <text x="95" y="50" textAnchor="middle" fontSize="4" fill="#667085" className="rotate-90 origin-center">IM</text>
-                       <text x="50" y="95" textAnchor="middle" fontSize="4" fill="#667085" className="rotate-90 origin-center">RT</text>
-                       <text x="5" y="50" textAnchor="middle" fontSize="4" fill="#667085" className="rotate-90 origin-center">TP</text>
-                    </svg>
-                 </div>
+                         {pillarCoverage.map((p, i) => {
+                           const a = (angles[i] * Math.PI) / 180;
+                           const lx = 50 + (R + 6) * Math.cos(a);
+                           const ly = 50 - (R + 6) * Math.sin(a);
+                           return (
+                             <text key={p.id} x={lx} y={ly} textAnchor="middle" dominantBaseline="central" fontSize="3.5" fill="#667085" fontWeight="600">
+                               {p.label.slice(0, 4)}
+                             </text>
+                           );
+                         })}
+                       </svg>
+                     </div>
+                   );
+                 })()}
                  <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 w-full">
-                    <div className="flex items-center gap-1.5"><div className="size-1.5 rounded-full bg-[#635BFF]" /> <span className="text-[10px] text-[#475467] font-medium">Risk Mgmt: 100%</span></div>
-                    <div className="flex items-center gap-1.5"><div className="size-1.5 rounded-full bg-[#635BFF]" /> <span className="text-[10px] text-[#475467] font-medium">Incidents: 85%</span></div>
-                    <div className="flex items-center gap-1.5"><div className="size-1.5 rounded-full bg-[#635BFF]" /> <span className="text-[10px] text-[#475467] font-medium">Testing: 92%</span></div>
-                    <div className="flex items-center gap-1.5"><div className="size-1.5 rounded-full bg-[#635BFF]" /> <span className="text-[10px] text-[#475467] font-medium">3rd Party: 78%</span></div>
+                    {pillarCoverage.map((p) => (
+                      <div key={p.id} className="flex items-center gap-1.5">
+                        <div className="size-1.5 rounded-full bg-[#635BFF]" />
+                        <span className="text-[10px] text-[#475467] font-medium">
+                          {p.label}: {p.pct}%
+                        </span>
+                      </div>
+                    ))}
                  </div>
               </CardContent>
           </Card>
 
-          {/* Resource Heatmap Widget */}
+          {/* Resource Heatmap Widget — driven by ICT assets */}
           <Card className="border-[#E3E8EF] shadow-none bg-white transition-all duration-300 hover:shadow-lg lg:col-span-1">
              <CardHeader className="pb-2 pt-5 px-5">
                 <CardTitle className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Critical Resource Heatmap
+                  ICT Asset Risk Heatmap
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-5">
                  <div className="grid grid-cols-7 gap-1">
-                    {Array.from({ length: 28 }).map((_, i) => (
-                       <div 
-                         key={i} 
-                         className={cn(
-                           "aspect-square rounded-[2px] transition-all hover:scale-125 hover:z-10 cursor-help",
-                           i % 5 === 0 ? "bg-red-500" : i % 3 === 0 ? "bg-amber-400" : "bg-emerald-500"
-                         )}
-                       />
-                    ))}
+                    {ictAssets.length > 0 ? (
+                      ictAssets.map((asset) => {
+                        const score = asset.riskScore ?? 0;
+                        const color =
+                          score >= 70 ? "bg-red-500" :
+                          score >= 40 ? "bg-amber-400" :
+                          "bg-emerald-500";
+                        return (
+                          <div
+                            key={asset.id}
+                            title={`${asset.name}: ${asset.criticality} (${Math.round(score)})`}
+                            className={cn(
+                              "aspect-square rounded-[2px] transition-all hover:scale-125 hover:z-10 cursor-help",
+                              color,
+                            )}
+                          />
+                        );
+                      })
+                    ) : (
+                      Array.from({ length: 28 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="aspect-square rounded-[2px] bg-gray-200"
+                        />
+                      ))
+                    )}
                  </div>
                  <div className="mt-6 space-y-2">
                     <div className="flex items-center justify-between text-[11px]">
-                       <span className="text-[#475467] font-medium">Service Uptime</span>
-                       <span className="text-emerald-600 font-bold">99.99%</span>
-                    </div>
-                    <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
-                       <div className="h-full bg-emerald-500 w-[99%]" />
+                       <span className="text-[#475467] font-medium">ICT Assets Tracked</span>
+                       <span className="text-[#635BFF] font-bold">{ictAssets.length}</span>
                     </div>
                     <div className="flex items-center justify-between text-[11px]">
-                       <span className="text-[#475467] font-medium">Active Incidents</span>
-                       <span className="text-red-500 font-bold">2 CRITICAL</span>
+                       <span className="text-[#475467] font-medium">Open Incidents</span>
+                       <span className={cn("font-bold", criticalIncidents > 0 ? "text-red-500" : openIncidents > 0 ? "text-amber-600" : "text-emerald-600")}>
+                         {criticalIncidents > 0 ? `${criticalIncidents} CRITICAL` : openIncidents > 0 ? `${openIncidents} open` : "None"}
+                       </span>
                     </div>
                  </div>
               </CardContent>

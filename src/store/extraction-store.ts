@@ -80,19 +80,80 @@ export const useExtractionStore = create<ExtractionState>()((set, get) => ({
   toggleSidebar: () =>
     set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
 
-  approveDocument: () =>
-    set((state) => ({
-      document: { ...state.document, status: "approved" },
-    })),
+  approveDocument: async () => {
+    const { document } = get();
+    if (!document.id) return;
 
-  rejectDocument: () =>
-    set((state) => ({
-      document: { ...state.document, status: "rejected" },
-    })),
+    set({ isSaving: true });
+    try {
+      const res = await fetch(`/api/contracts/${document.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve" }),
+      });
+      if (!res.ok) throw new Error("Failed to approve");
+      const updated = await res.json();
+      set({
+        document: { ...document, status: "approved" },
+        savedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    } finally {
+      set({ isSaving: false });
+    }
+  },
+
+  rejectDocument: async () => {
+    const { document } = get();
+    if (!document.id) return;
+
+    set({ isSaving: true });
+    try {
+      const res = await fetch(`/api/contracts/${document.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reject" }),
+      });
+      if (!res.ok) throw new Error("Failed to reject");
+      set({
+        document: { ...document, status: "rejected" },
+        savedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    } finally {
+      set({ isSaving: false });
+    }
+  },
 
   saveChanges: async () => {
+    const { document } = get();
+    if (!document.id) return;
+
     set({ isSaving: true });
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    set({ isSaving: false, savedAt: new Date().toISOString() });
+    try {
+      // Map store fields to the flat structure the API expects
+      const fieldsToSave: Record<string, any> = {};
+      Object.entries(document.fields).forEach(([key, field]) => {
+        fieldsToSave[key] = field;
+      });
+
+      const res = await fetch(`/api/contracts/${document.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: fieldsToSave }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save changes");
+
+      set({ isSaving: false, savedAt: new Date().toISOString() });
+    } catch (error) {
+      console.error(error);
+      set({ isSaving: false });
+      throw error;
+    }
   },
 }));

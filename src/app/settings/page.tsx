@@ -5,14 +5,20 @@ import { useSession, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
+  Bot,
   Building2,
   Check,
   Crown,
+  Eye,
+  EyeOff,
+  Key,
   Loader2,
   LogOut,
   Mail,
   Pencil,
   Shield,
+  Sparkles,
+  Trash2,
   User,
   Users,
 } from "lucide-react";
@@ -53,6 +59,25 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // AI Provider state
+  const [aiConfig, setAiConfig] = useState<{
+    configured: boolean;
+    maskedKey?: string | null;
+    hasEnvKey?: boolean;
+    status?: string;
+  } | null>(null);
+  const [aiKey, setAiKey] = useState("");
+  const [showAiKey, setShowAiKey] = useState(false);
+  const [savingAi, setSavingAi] = useState(false);
+  const [deletingAi, setDeletingAi] = useState(false);
+
+  const fetchAiConfig = useCallback(async () => {
+    try {
+      const res = await fetch("/api/ai/settings");
+      if (res.ok) setAiConfig(await res.json());
+    } catch {}
+  }, []);
+
   const fetchWorkspace = useCallback(async () => {
     try {
       const res = await fetch("/api/workspace");
@@ -68,7 +93,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchWorkspace();
-  }, [fetchWorkspace]);
+    fetchAiConfig();
+  }, [fetchWorkspace, fetchAiConfig]);
 
   async function handleSaveName() {
     if (!newName.trim() || newName.trim() === workspace?.name) {
@@ -348,8 +374,124 @@ export default function SettingsPage() {
           </Card>
         </motion.div>
 
-        {/* Danger Zone */}
+        {/* AI Provider */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={5}>
+          <Card className="border-[#E3E8EF] shadow-none bg-white">
+            <CardHeader className="pb-3 pt-5 px-5">
+              <CardTitle className="text-[13px] font-semibold text-[#0A2540] flex items-center gap-2">
+                <Sparkles className="size-4 text-[#635BFF]" />
+                AI Provider
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-5 pb-5 flex flex-col gap-4">
+              <p className="text-[12px] text-muted-foreground">
+                Configure the AI provider for DORA Copilot and contract extraction.
+                {aiConfig?.hasEnvKey && (
+                  <span className="ml-1 text-emerald-600 font-medium">
+                    Server environment key detected.
+                  </span>
+                )}
+              </p>
+
+              {aiConfig?.configured && aiConfig.maskedKey && (
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-emerald-200 bg-emerald-50/50">
+                  <Key className="size-4 text-emerald-600 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-emerald-800">Active API Key</p>
+                    <p className="text-[11px] text-emerald-700 font-mono truncate">{aiConfig.maskedKey}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-[11px] text-red-600 hover:bg-red-50 hover:text-red-700"
+                    disabled={deletingAi}
+                    onClick={async () => {
+                      setDeletingAi(true);
+                      try {
+                        const res = await fetch("/api/ai/settings", { method: "DELETE" });
+                        if (res.ok) {
+                          toast.success("AI provider key removed");
+                          fetchAiConfig();
+                        } else {
+                          toast.error("Failed to remove key");
+                        }
+                      } catch {
+                        toast.error("Something went wrong");
+                      } finally {
+                        setDeletingAi(false);
+                      }
+                    }}
+                  >
+                    {deletingAi ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3 mr-1" />}
+                    Remove
+                  </Button>
+                </div>
+              )}
+
+              {(session?.user?.role === "OWNER" || session?.user?.role === "ADMIN") && (
+                <div className="flex flex-col gap-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Anthropic API Key
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type={showAiKey ? "text" : "password"}
+                        value={aiKey}
+                        onChange={(e) => setAiKey(e.target.value)}
+                        placeholder="sk-ant-api03-..."
+                        className="h-8 text-[13px] pr-8 border-[#E3E8EF] bg-[#F6F9FC] focus-visible:ring-[#635BFF]/30 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowAiKey(!showAiKey)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-[#0A2540]"
+                      >
+                        {showAiKey ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                      </button>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="h-8 text-[12px] bg-[#635BFF] hover:bg-[#4F46E5] text-white"
+                      disabled={!aiKey.trim() || savingAi}
+                      onClick={async () => {
+                        setSavingAi(true);
+                        try {
+                          const res = await fetch("/api/ai/settings", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ apiKey: aiKey }),
+                          });
+                          if (res.ok) {
+                            toast.success("API key validated and saved");
+                            setAiKey("");
+                            fetchAiConfig();
+                          } else {
+                            const data = await res.json();
+                            toast.error(data.error || "Failed to save key");
+                          }
+                        } catch {
+                          toast.error("Something went wrong");
+                        } finally {
+                          setSavingAi(false);
+                        }
+                      }}
+                    >
+                      {savingAi ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />}
+                      <span className="ml-1">Save</span>
+                    </Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    The key is validated on save and stored encrypted. Used by DORA Copilot and extraction.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Danger Zone */}
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={6}>
           <Card className="border-red-200/50 shadow-none bg-white">
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
