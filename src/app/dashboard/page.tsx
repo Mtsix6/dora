@@ -72,7 +72,10 @@ export default async function DashboardPage() {
   const reviewQueue = contracts.filter((contract) => contract.status === "EXTRACTED").length;
   const openIncidents = incidents.filter((incident) => incident.resolvedAt === null).length;
   const criticalIncidents = incidents.filter(
-    (incident) => incident.resolvedAt === null && incident.severity.toLowerCase() === "critical",
+    (incident) =>
+      incident.resolvedAt === null &&
+      typeof incident.severity === "string" &&
+      incident.severity.toLowerCase() === "critical",
   ).length;
   const complianceScore = complianceChecks.length
     ? Math.round((complianceChecks.filter((check) => check.status === "Compliant").length / complianceChecks.length) * 100)
@@ -121,7 +124,10 @@ export default async function DashboardPage() {
       const count = ictAssets.filter((asset) => {
         const score = Math.round(asset.riskScore ?? 0);
         const likelihood = score <= 25 ? 0 : score <= 50 ? 1 : score <= 75 ? 2 : 3;
-        const impact = riskMap[asset.criticality.toLowerCase()] ?? 0;
+        const impact =
+          typeof asset.criticality === "string"
+            ? (riskMap[asset.criticality.toLowerCase()] ?? 0)
+            : 0;
         return impact === impactIndex && likelihood === likelihoodIndex;
       }).length;
       return { impactLevel, likelihoodLevel, count };
