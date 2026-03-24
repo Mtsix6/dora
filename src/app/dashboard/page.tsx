@@ -40,6 +40,10 @@ const PILLARS = [
 
 const LEVELS = ["Low", "Moderate", "High", "Critical"] as const;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.workspaceId) redirect("/login");
@@ -85,10 +89,10 @@ export default async function DashboardPage() {
   let totalConfidence = 0;
   let totalConfidenceFields = 0;
   for (const contract of contracts) {
-    const data = contract.extractedData as Record<string, { confidence?: number }> | null;
-    if (!data) continue;
+    const data = contract.extractedData;
+    if (!isRecord(data)) continue;
     for (const field of Object.values(data)) {
-      if (typeof field?.confidence === "number") {
+      if (isRecord(field) && typeof field.confidence === "number") {
         totalConfidence += field.confidence;
         totalConfidenceFields += 1;
       }
@@ -389,7 +393,15 @@ export default async function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[15px] font-bold text-[#182033]">{contract.fileName}</p>
                       <p className="truncate text-[13px] text-[#6C7892]">
-                        {(contract.extractedData as { entityName?: { value?: string } } | null)?.entityName?.value || "Awaiting extraction details"}
+                        {(() => {
+                          const data = contract.extractedData;
+                          if (!isRecord(data)) return "Awaiting extraction details";
+                          const entityName = data.entityName;
+                          if (!isRecord(entityName) || typeof entityName.value !== "string") {
+                            return "Awaiting extraction details";
+                          }
+                          return entityName.value;
+                        })()}
                       </p>
                     </div>
                     <StatusBadge status={mapContractStatus(contract.status)} />
