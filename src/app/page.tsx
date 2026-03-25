@@ -202,11 +202,20 @@ export default function LandingPage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const heroY = useTransform(scrollYProgress, [0, 0.6], [0, -60]);
 
-  // Scroll-top button visibility
+  // Navbar hide/show + scroll-top button
+  const [navHidden, setNavHidden] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   useEffect(() => {
+    let lastY = window.scrollY;
     const onScroll = () => {
-      setShowScrollTop(window.scrollY > 400);
+      const y = window.scrollY;
+      if (y < lastY) {
+        setNavHidden(false);          // ANY upward movement → show immediately
+      } else if (y > lastY + 6 && y > 80) {
+        setNavHidden(true);           // scrolling down past 80px → hide
+      }
+      setShowScrollTop(y > 400);
+      lastY = y;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -218,8 +227,8 @@ export default function LandingPage() {
       <motion.nav
         className="fixed top-0 left-0 right-0 z-50 px-4 pt-5 md:px-6"
         initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        animate={{ y: navHidden ? -110 : 0, opacity: navHidden ? 0 : 1 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 rounded-[22px] border border-white/80 bg-white/92 px-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl">
           <Link href="/" className="flex items-center gap-2 select-none group">
