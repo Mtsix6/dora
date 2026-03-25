@@ -603,34 +603,136 @@
 ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
 
 /* ─────────────────────────────────────────────────────────────────────
-   PERSPECTIVE GRID BACKGROUND
+   HERO PERSPECTIVE GRID — landing page only, behind the hero title
+   Floor-style: large cells near bottom, converging horizon at top
 ───────────────────────────────────────────────────────────────────── */
-.perspective-grid-overlay {
+.hero-perspective-grid {
   position: absolute;
   inset: 0;
-  overflow: hidden;
   pointer-events: none;
-  z-index: 0;
+  overflow: hidden;
 }
 
-.perspective-grid-overlay::before {
+/* The actual grid — anchored at the BOTTOM, rotates around bottom edge
+   so the top appears to vanish into the distance (floor perspective) */
+.hero-perspective-grid::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -50%;
-  width: 200%;
-  height: 160%;
+  bottom: -5%;
+  left: -60%;
+  width: 220%;
+  height: 200%;
   background-image:
-    linear-gradient(rgba(99, 91, 255, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 91, 255, 0.055) 1px, transparent 1px);
-  background-size: 60px 60px;
-  transform: perspective(700px) rotateX(48deg);
-  transform-origin: 50% 0%;
+    linear-gradient(rgba(180, 180, 210, 0.32) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(180, 180, 210, 0.32) 1px, transparent 1px);
+  background-size: 52px 52px;
+  transform: perspective(520px) rotateX(60deg);
+  transform-origin: 50% 100%;
 }
 
-.perspective-grid-overlay::after {
+/* Top fade — fades the grid cleanly into white at the top / horizon */
+.hero-perspective-grid::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 100% 50% at 50% 100%, rgba(255,255,255,0.95) 0%, transparent 70%);
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,1)    0%,
+    rgba(255,255,255,0.88) 20%,
+    rgba(255,255,255,0.4)  45%,
+    rgba(255,255,255,0)    65%
+  );
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   ICON MICRO-ANIMATIONS — the smoothest 2026 interactions
+───────────────────────────────────────────────────────────────────── */
+
+/* Base: scale + lift on any interactive element with icon */
+.icon-anim svg {
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.15s ease;
+  will-change: transform;
+}
+.icon-anim:hover svg  { transform: scale(1.22) translateY(-1.5px); }
+.icon-anim:active svg { transform: scale(0.88); transition-duration: 70ms; }
+
+/* Jiggle — great for bell / notification icons */
+@keyframes icon-jiggle {
+  0%   { transform: rotate(0deg)   scale(1); }
+  18%  { transform: rotate(-14deg) scale(1.18); }
+  36%  { transform: rotate(11deg)  scale(1.18); }
+  54%  { transform: rotate(-7deg)  scale(1.12); }
+  72%  { transform: rotate(4deg)   scale(1.08); }
+  90%  { transform: rotate(-2deg)  scale(1.04); }
+  100% { transform: rotate(0deg)   scale(1.12); }
+}
+.icon-jiggle svg {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.icon-jiggle:hover svg {
+  animation: icon-jiggle 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Spin — for settings / refresh icons */
+@keyframes icon-spin-once {
+  from { transform: rotate(0deg) scale(1); }
+  to   { transform: rotate(90deg) scale(1.12); }
+}
+.icon-spin-hover svg {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.icon-spin-hover:hover svg { transform: rotate(90deg) scale(1.12); }
+.icon-spin-hover:active svg { transform: rotate(45deg) scale(0.9); transition-duration: 80ms; }
+
+/* Bounce-up — arrows, chevrons */
+@keyframes icon-bounce-up {
+  0%   { transform: translateY(0)   scale(1); }
+  45%  { transform: translateY(-5px) scale(1.15); }
+  72%  { transform: translateY(1px) scale(0.97); }
+  100% { transform: translateY(-2px) scale(1.08); }
+}
+.icon-bounce-up svg {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.icon-bounce-up:hover svg {
+  animation: icon-bounce-up 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Panel open/close toggle — nudge left-right */
+@keyframes icon-nudge {
+  0%   { transform: translateX(0) scale(1); }
+  40%  { transform: translateX(4px) scale(1.12); }
+  70%  { transform: translateX(-1px) scale(1); }
+  100% { transform: translateX(2px) scale(1.08); }
+}
+.icon-nudge:hover svg {
+  animation: icon-nudge 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Sidebar nav icon — subtle scale + color shift handled via Tailwind group-hover */
+
+/* ─────────────────────────────────────────────────────────────────────
+   LINK HOVER UNDERLINE — smooth draw for nav links
+───────────────────────────────────────────────────────────────────── */
+.link-underline {
+  position: relative;
+  transition: color 0.18s ease;
+}
+.link-underline::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -1px;
+  height: 1.5px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 99px;
+}
+.link-underline:hover::after { transform: scaleX(1); }

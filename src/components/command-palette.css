@@ -1,65 +1,14 @@
-.cmd-dialog {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 0;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-.cmd-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(10, 37, 64, 0.2);
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease-out;
-}
-
-.cmd-content {
-  position: fixed;
-  top: clamp(88px, 12vh, 132px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1001;
-  width: min(760px, calc(100vw - 32px));
-  max-height: min(72vh, 720px);
-  overflow: hidden;
-  border-radius: 16px;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 25px 50px -12px rgba(10, 37, 64, 0.25), 0 0 0 1px rgba(10, 37, 64, 0.05);
-  padding: 12px;
-  animation: slideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cmd-list {
-  margin-top: 8px;
-  max-height: 380px;
-  overflow-y: auto;
-  width: 100%;
-  padding: 4px;
-  display: flex;
-  flex-direction: column;
-}
-
-@media (max-width: 640px) {
-  .cmd-content {
-    top: 84px;
-    width: calc(100vw - 20px);
-    border-radius: 14px;
-  }
-}
+/* cmdk overrides — the dialog is now rendered via React portal,
+   these styles only tweak the Command list/group/item internals */
 
 .cmd-group [cmdk-group-heading] {
-  padding: 8px 12px;
-  font-size: 11px;
-  font-weight: 600;
+  padding: 10px 12px 6px;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #8f9bb3; /* muted-foreground approximation */
+  letter-spacing: 0.07em;
+  color: #94a3b8;
+  user-select: none;
 }
 
 .cmd-item {
@@ -69,29 +18,24 @@
   padding: 8px 12px;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.1s ease;
-  margin-bottom: 2px;
+  transition: background 0.12s ease, transform 0.15s cubic-bezier(0.16,1,0.3,1);
+  margin-bottom: 1px;
 }
 
 .cmd-item[aria-selected="true"],
 .cmd-item:hover {
-  background-color: #F6F9FC;
+  background: rgba(99, 91, 255, 0.06);
+  transform: translateX(2px);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.cmd-item:active {
+  transform: scale(0.99) translateX(2px);
+  transition-duration: 60ms;
 }
 
-@keyframes slideIn {
-  from { 
-    opacity: 0; 
-    transform: scale(0.96) translateY(-10px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: scale(1) translateY(0); 
-  }
+.cmd-list::-webkit-scrollbar { width: 4px; }
+.cmd-list::-webkit-scrollbar-track { background: transparent; }
+.cmd-list::-webkit-scrollbar-thumb {
+  background: #E3E8EF;
+  border-radius: 9999px;
 }

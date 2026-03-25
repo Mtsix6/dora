@@ -128,12 +128,12 @@ export function LeftSidebar() {
         </div>
 
         {/* Cmd+K Fake Trigger */}
-        <button 
+        <button
           onClick={() => window.dispatchEvent(new Event('open-cmd-k'))}
-          className="w-full flex items-center justify-between px-2.5 py-2 mb-3 bg-[#F6F9FC] border border-[#E3E8EF] rounded-lg text-muted-foreground hover:bg-[#E3E8EF]/50 hover:text-[#0A2540] transition-colors group"
+          className="w-full flex items-center justify-between px-2.5 py-2 mb-3 bg-[#F6F9FC] border border-[#E3E8EF] rounded-lg text-muted-foreground hover:bg-white hover:border-[#635BFF]/30 hover:shadow-sm transition-all duration-200 group"
         >
           <div className="flex items-center gap-2">
-            <Search className="size-3.5 group-hover:text-[#635BFF] transition-colors" />
+            <Search className="size-3.5 group-hover:text-[#635BFF] group-hover:scale-110 transition-all duration-200" />
             <span className="text-[13px] font-medium">Search</span>
           </div>
           <div className="flex items-center gap-1 font-mono text-[10px] bg-white border border-[#E3E8EF] px-1.5 py-0.5 rounded text-muted-foreground shadow-sm">
@@ -204,8 +204,10 @@ function NavEntry({
 
         <Icon
           className={cn(
-            "relative size-3.5 flex-shrink-0 transition-colors duration-[120ms]",
-            isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
+            "relative size-3.5 flex-shrink-0 transition-all duration-[220ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+            "group-hover:scale-[1.25] group-hover:-translate-y-px",
+            "group-active:scale-[0.88]",
+            isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-indigo-500"
           )}
         />
         <span className="relative flex-1 text-left truncate">{item.label}</span>
@@ -250,8 +252,10 @@ function NavEntry({
 
         <Icon
           className={cn(
-            "relative size-3.5 flex-shrink-0 transition-colors duration-[120ms]",
-            isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
+            "relative size-3.5 flex-shrink-0 transition-all duration-[220ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+            "group-hover:scale-[1.25] group-hover:-translate-y-px",
+            "group-active:scale-[0.88]",
+            isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-indigo-500"
           )}
         />
         <span className="relative flex-1 text-left truncate">{item.label}</span>

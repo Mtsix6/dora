@@ -147,7 +147,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         exit={{ opacity: 0, y: -4, filter: "blur(1px)" }}
         transition={{ duration: 0.25, ease: EASE_OUT_EXPO }}
-        className="h-full"
+        className="min-h-full"
       >
         {children}
       </motion.div>
