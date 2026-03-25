@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -81,9 +83,13 @@ export function TopNavbar() {
   const router = useRouter();
   const breadcrumbs = BREADCRUMB_MAP[pathname] ?? [];
   const isExtractionPage = pathname === "/extraction";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
-  return (
-    <header className="fixed top-0 left-0 right-0 h-12 z-50 border-b border-[#E3E8EF]/70 bg-white shadow-[0_1px_12px_rgba(10,37,64,0.07)] flex items-center px-4 gap-3">
+  if (!mounted) return null;
+
+  return createPortal(
+    <header className="fixed top-0 left-0 right-0 h-12 z-[9999] border-b border-[#E3E8EF]/70 bg-white shadow-[0_1px_12px_rgba(10,37,64,0.07)] flex items-center px-4 gap-3">
       {/* Sidebar toggle */}
       <Tooltip>
         <TooltipTrigger
@@ -249,7 +255,8 @@ export function TopNavbar() {
           <UserAvatar />
         </div>
       </div>
-    </header>
+    </header>,
+    document.body
   );
 }
 
