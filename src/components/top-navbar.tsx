@@ -86,7 +86,7 @@ export function TopNavbar() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
-  if (!mounted) return null;
+  if (!mounted || typeof globalThis.document === "undefined" || !globalThis.document.body) return null;
 
   return createPortal(
     <header className="fixed top-0 left-0 right-0 h-12 z-[9999] border-b border-[#E3E8EF]/70 bg-white shadow-[0_1px_12px_rgba(10,37,64,0.07)] flex items-center px-4 gap-3">
@@ -256,7 +256,7 @@ export function TopNavbar() {
         </div>
       </div>
     </header>,
-    document.body
+    globalThis.document.body
   );
 }
 

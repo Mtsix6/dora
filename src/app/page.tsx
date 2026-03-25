@@ -39,11 +39,11 @@ import { EASE_OUT_EXPO } from "@/lib/motion";
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 40 },
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: EASE, delay: i * 0.1 },
+    transition: { duration: 0.7, ease: EASE, delay: i * 0.12 },
   }),
 };
 
@@ -56,11 +56,46 @@ const fadeIn = {
 };
 
 const scaleIn = {
-  hidden: { opacity: 0, scale: 0.92 },
+  hidden: { opacity: 0, scale: 0.88 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.5, ease: EASE },
+    transition: { duration: 0.6, ease: EASE },
+  },
+};
+
+const slideLeft = {
+  hidden: { opacity: 0, x: -40 },
+  visible: (i: number = 0) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.65, ease: EASE, delay: i * 0.1 },
+  }),
+};
+
+const slideRight = {
+  hidden: { opacity: 0, x: 40 },
+  visible: (i: number = 0) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.65, ease: EASE, delay: i * 0.1 },
+  }),
+};
+
+const containerStagger = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+  },
+};
+
+const staggerChild = {
+  hidden: { opacity: 0, y: 28, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.55, ease: EASE },
   },
 };
 
@@ -70,13 +105,23 @@ function AnimatedSection({
   children,
   className,
   id,
+  variant = "fadeUp",
 }: {
   children: React.ReactNode;
   className?: string;
   id?: string;
+  variant?: "fadeUp" | "stagger" | "slideLeft" | "slideRight" | "scaleIn";
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+
+  const variantMap = {
+    fadeUp,
+    stagger: containerStagger,
+    slideLeft,
+    slideRight,
+    scaleIn,
+  };
 
   return (
     <motion.section
@@ -85,10 +130,19 @@ function AnimatedSection({
       className={className}
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
-      variants={fadeUp}
+      variants={variantMap[variant]}
     >
       {children}
     </motion.section>
+  );
+}
+
+/** Single item inside a stagger section */
+function StaggerItem({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <motion.div variants={staggerChild} className={className}>
+      {children}
+    </motion.div>
   );
 }
 
@@ -148,11 +202,21 @@ export default function LandingPage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const heroY = useTransform(scrollYProgress, [0, 0.6], [0, -60]);
 
+  // Scroll-top button visibility
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <div className="min-h-full bg-white overflow-x-hidden">
       {/* ── Navbar ───────────────────────────────────────────────── */}
       <motion.nav
-        className="sticky top-0 z-50 px-4 pt-5 md:px-6"
+        className="fixed top-0 left-0 right-0 z-50 px-4 pt-5 md:px-6"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -212,11 +276,10 @@ export default function LandingPage() {
       </motion.nav>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <div ref={heroRef} className="relative flex min-h-[85vh] items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,#eef0ff_0%,#ffffff_45%,#ffffff_100%)]">
-        {/* Advanced Background: Subtle Light Glows */}
+      <div ref={heroRef} className="relative flex min-h-[85vh] items-center justify-center overflow-hidden bg-white">
+        {/* Background: perspective grid + ambient glows */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(99,91,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(99,91,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px] opacity-45" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/70 to-white z-0" />
+          <div className="hero-perspective-grid" />
           <motion.div 
              animate={{ 
                scale: [1, 1.2, 1],
@@ -241,7 +304,7 @@ export default function LandingPage() {
         </div>
 
         <motion.section
-          className="relative z-10 mx-auto max-w-6xl px-6 pb-8 pt-12 text-center"
+          className="relative z-10 mx-auto max-w-6xl px-6 pb-8 pt-28 text-center"
           style={{ opacity: heroOpacity, y: heroY }}
         >
           <motion.div
@@ -1082,6 +1145,38 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* ── Scroll-to-top bubble ─────────────────────────────────── */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.4, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.4, y: 24 }}
+            whileHover={{ scale: 1.13, y: -4, boxShadow: "0 12px 32px rgba(99,91,255,0.55)" }}
+            whileTap={{ scale: 0.88 }}
+            transition={{ type: "spring", stiffness: 380, damping: 18 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-7 right-7 z-50 size-12 rounded-full bg-gradient-to-br from-indigo-600 to-blue-500 text-white shadow-[0_6px_24px_rgba(99,91,255,0.45)] flex items-center justify-center"
+            aria-label="Scroll to top"
+          >
+            <motion.svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20" height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              animate={{ y: [0, -2, 0] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </motion.svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
