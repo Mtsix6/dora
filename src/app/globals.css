@@ -601,3 +601,36 @@
   transition: background 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+
+/* ─────────────────────────────────────────────────────────────────────
+   PERSPECTIVE GRID BACKGROUND
+───────────────────────────────────────────────────────────────────── */
+.perspective-grid-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.perspective-grid-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 160%;
+  background-image:
+    linear-gradient(rgba(99, 91, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 91, 255, 0.055) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(700px) rotateX(48deg);
+  transform-origin: 50% 0%;
+}
+
+.perspective-grid-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 100% 50% at 50% 100%, rgba(255,255,255,0.95) 0%, transparent 70%);
+}

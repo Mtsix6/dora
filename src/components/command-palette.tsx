@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Command } from "cmdk";
+import { DialogTitle } from "@radix-ui/react-dialog";
 import { useRouter } from "next/navigation";
 import { 
   Building2, 
@@ -56,6 +57,7 @@ export function CommandPalette() {
       <div className="cmd-overlay" aria-hidden="true" onClick={() => setOpen(false)} />
       
       <div className="cmd-content">
+        <DialogTitle className="sr-only">Global Command Menu</DialogTitle>
         <div className="flex items-center px-4 pb-3 border-b border-[#E3E8EF]/50">
           <Search className="mr-3 h-5 w-5 text-muted-foreground" />
           <Command.Input 

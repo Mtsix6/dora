@@ -81,7 +81,7 @@ export function TopNavbar() {
   const isExtractionPage = pathname === "/extraction";
 
   return (
-    <header className="h-12 flex-shrink-0 border-b border-[#E3E8EF] bg-white/95 backdrop-blur-sm flex items-center px-4 gap-3 z-20">
+    <header className="h-12 flex-shrink-0 border-b border-[#E3E8EF]/70 bg-white shadow-[0_1px_12px_rgba(10,37,64,0.07)] flex items-center px-4 gap-3 z-20">
       {/* Sidebar toggle */}
       <Tooltip>
         <TooltipTrigger
