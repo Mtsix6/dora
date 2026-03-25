@@ -6,6 +6,7 @@ import { PageTransition } from "@/lib/motion";
 import { CommandPalette } from "@/components/command-palette";
 import { DoraAICopilot } from "@/components/dora-ai-copilot";
 import { LiveNotifications } from "@/components/live-notifications";
+import { ScrollToTop } from "@/components/scroll-to-top";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -15,20 +16,24 @@ interface AppShellProps {
 
 export function AppShell({ children, noPad = false }: AppShellProps) {
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-white relative">
-      <div aria-hidden="true" className="perspective-grid-overlay" />
-      <div className="relative z-10 flex flex-col h-full overflow-hidden">
-        <LiveNotifications />
-        <CommandPalette />
-        <DoraAICopilot />
-        <TopNavbar />
-        <div className="flex flex-1 min-h-0">
-          <LeftSidebar />
-          <main className="flex-1 min-w-0 overflow-hidden relative">
-            <PageTransition>{children}</PageTransition>
-          </main>
-        </div>
+    <div className="flex flex-col h-full bg-[#F6F9FC]">
+      <LiveNotifications />
+      <CommandPalette />
+      <DoraAICopilot />
+      <TopNavbar />
+      {/* Spacer that reserves the h-12 slot the fixed navbar occupies */}
+      <div className="h-12 flex-shrink-0" />
+      {/* overflow-hidden only on the content row so window never scrolls */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <LeftSidebar />
+        <main
+          id="main-scroll"
+          className="flex-1 min-w-0 overflow-y-auto"
+        >
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
+      <ScrollToTop />
     </div>
   );
 }
