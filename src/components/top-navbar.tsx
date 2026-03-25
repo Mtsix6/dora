@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -74,51 +73,6 @@ const BREADCRUMB_MAP: Record<string, { label: string; href: string }[]> = {
 const iconBtnClass =
   "h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-[#F6F9FC] icon-btn group";
 
-/* ── Scroll-direction hook wired to the main scroll container ── */
-function useNavbarVisibility() {
-  const [hidden, setHidden] = useState(false);
-
-  useEffect(() => {
-    // Retry until #main-scroll exists (may not be in DOM on first paint)
-    let el = document.getElementById("main-scroll");
-    if (!el) {
-      const timer = setTimeout(() => {
-        el = document.getElementById("main-scroll");
-        if (el) attach(el);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-    return attach(el);
-
-    function attach(container: HTMLElement) {
-      let lastY = container.scrollTop;
-      let accumulated = 0; // downward px accumulated since last direction change
-
-      const onScroll = () => {
-        const y = container.scrollTop;
-        const delta = y - lastY;
-        lastY = y;
-
-        if (delta < 0) {
-          // Any upward movement → show immediately, reset counter
-          accumulated = 0;
-          setHidden(false);
-        } else if (delta > 0) {
-          // Accumulate downward distance; hide after 40px total past the top zone
-          accumulated += delta;
-          if (accumulated > 40 && y > 60) {
-            setHidden(true);
-          }
-        }
-      };
-
-      container.addEventListener("scroll", onScroll, { passive: true });
-      return () => container.removeEventListener("scroll", onScroll);
-    }
-  }, []);
-
-  return hidden;
-}
 
 export function TopNavbar() {
   const { document, isSidebarCollapsed, toggleSidebar, savedAt } =
@@ -127,14 +81,9 @@ export function TopNavbar() {
   const router = useRouter();
   const breadcrumbs = BREADCRUMB_MAP[pathname] ?? [];
   const isExtractionPage = pathname === "/extraction";
-  const hidden = useNavbarVisibility();
 
   return (
-    <motion.header
-      className="fixed top-0 left-0 right-0 h-12 z-50 border-b border-[#E3E8EF]/70 bg-white shadow-[0_1px_12px_rgba(10,37,64,0.07)] flex items-center px-4 gap-3"
-      animate={{ y: hidden ? -48 : 0 }}
-      transition={{ duration: 0.38, ease: EASE_OUT_EXPO }}
-    >
+    <header className="fixed top-0 left-0 right-0 h-12 z-50 border-b border-[#E3E8EF]/70 bg-white shadow-[0_1px_12px_rgba(10,37,64,0.07)] flex items-center px-4 gap-3">
       {/* Sidebar toggle */}
       <Tooltip>
         <TooltipTrigger
@@ -300,7 +249,7 @@ export function TopNavbar() {
           <UserAvatar />
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 }
 
