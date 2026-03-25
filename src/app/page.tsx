@@ -152,32 +152,33 @@ export default function LandingPage() {
     <div className="min-h-full bg-white overflow-x-hidden">
       {/* ── Navbar ───────────────────────────────────────────────── */}
       <motion.nav
-        className="sticky top-0 z-50 border-b border-[#E3E8EF]/80 bg-white/80 backdrop-blur-xl backdrop-saturate-150"
+        className="sticky top-0 z-50 px-4 pt-5 md:px-6"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 rounded-[22px] border border-white/80 bg-white/92 px-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl">
           <Link href="/" className="flex items-center gap-2 select-none group">
-            <div className="size-6 rounded-md bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-sm shadow-indigo-600/20">
-              <LayoutGrid className="size-3.5 text-white" strokeWidth={2.5} />
+            <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#5B5BD6] to-[#7E7BFF] shadow-[0_12px_24px_rgba(91,91,214,0.28)] transition-transform duration-200 group-hover:scale-110">
+              <LayoutGrid className="size-4 text-white" strokeWidth={2.5} />
             </div>
-            <span className="text-sm font-bold text-[#1E293B] tracking-tight">
+            <span className="text-lg font-black text-[#111827] tracking-tight">
               DORA<span className="text-indigo-600">·</span>RoI
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1 ml-4">
+          <div className="ml-4 hidden items-center gap-1 lg:flex">
             {[
-              { label: "Product", href: "#features" },
-              { label: "How it works", href: "#how-it-works" },
-              { label: "Compliance", href: "#pillars" },
+              { label: "Solutions", href: "#features" },
+              { label: "Features", href: "#how-it-works" },
+              { label: "Company", href: "#pillars" },
               { label: "Pricing", href: "/pricing" },
+              { label: "Help Center", href: "#faq" },
             ].map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="px-3 py-1.5 text-[13px] text-muted-foreground hover:text-[#0A2540] rounded-md hover:bg-[#F6F9FC] transition-all duration-200"
+                className="rounded-full px-3 py-2 text-[13px] text-[#4B5565] transition-colors duration-200 hover:bg-[#F5F7FB] hover:text-[#111827]"
               >
                 {item.label}
               </Link>
@@ -192,17 +193,16 @@ export default function LandingPage() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" size="sm" className="h-8 text-[13px] transition-all duration-200">
-                    Sign in
+                  <Button variant="outline" size="sm" className="h-10 rounded-xl border-[#D6DCE8] bg-white px-4 text-[13px] font-semibold text-[#111827]">
+                    Login
                   </Button>
                 </Link>
                 <Link href="/signup">
                   <Button
                     size="sm"
-                    className="h-8 text-[13px] bg-gradient-to-tr from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 text-white px-4 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-600/20"
+                    className="h-10 rounded-xl bg-[#111111] px-4 text-[13px] font-semibold text-white transition-all duration-200 hover:bg-black"
                   >
-                    Get started free
-                    <ArrowRight className="size-3.5 ml-1.5" />
+                    Sign Up
                   </Button>
                 </Link>
               </>
@@ -212,10 +212,11 @@ export default function LandingPage() {
       </motion.nav>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <div ref={heroRef} className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-white">
+      <div ref={heroRef} className="relative flex min-h-[85vh] items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,#eef0ff_0%,#ffffff_45%,#ffffff_100%)]">
         {/* Advanced Background: Subtle Light Glows */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white z-0" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(99,91,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(99,91,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px] opacity-45" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/70 to-white z-0" />
           <motion.div 
              animate={{ 
                scale: [1, 1.2, 1],
@@ -240,7 +241,7 @@ export default function LandingPage() {
         </div>
 
         <motion.section
-          className="relative z-10 max-w-6xl mx-auto px-6 pt-12 text-center"
+          className="relative z-10 mx-auto max-w-6xl px-6 pb-8 pt-12 text-center"
           style={{ opacity: heroOpacity, y: heroY }}
         >
           <motion.div
@@ -250,33 +251,32 @@ export default function LandingPage() {
           >
             <Badge
               variant="outline"
-              className="mb-8 border-indigo-100 text-indigo-600 bg-indigo-50/50 backdrop-blur-md font-bold text-[11px] px-4 py-1.5 rounded-full ring-1 ring-indigo-500/10 hover:bg-indigo-50/80 transition-all duration-500 cursor-default tracking-widest uppercase"
+              className="mb-8 rounded-full border-[#E5E7F1] bg-white px-4 py-2 text-[12px] font-semibold text-[#364152] shadow-sm hover:bg-white"
             >
-              <Sparkles className="size-3 mr-2 text-indigo-500 animate-pulse" />
-              The Future of DORA Compliance is Here
+              <Sparkles className="mr-2 size-3.5 text-indigo-500" />
+              AI-native DORA workflow orchestration just launched
             </Badge>
           </motion.div>
 
           <motion.h1
-            className="text-6xl md:text-[88px] font-black text-slate-900 leading-[1] tracking-tighter max-w-4xl mx-auto mb-8"
+            className="mx-auto mb-8 max-w-5xl text-[54px] font-black leading-[0.96] tracking-[-0.06em] text-slate-900 md:text-[92px]"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE_OUT_EXPO, delay: 0.1 }}
           >
-            Compliance at the <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-600 bg-[length:200%_auto] animate-gradient">
-              speed of light.
-            </span>
+            Turn DORA Compliance
+            <br />
+            Into Operational Clarity
           </motion.h1>
 
           <motion.p
-            className="text-xl md:text-2xl text-slate-500 max-w-2xl mx-auto leading-relaxed mb-12 font-medium"
+            className="mx-auto mb-12 max-w-3xl text-[18px] font-medium leading-8 text-slate-500 md:text-[20px]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3, ease: EASE_OUT_EXPO }}
           >
-            The world's first AI-native platform for DORA RoI. 
-            Automate Article 28 registers, risk assessments, and incident response with a single click.
+            A premium enterprise platform that transforms contracts, third-party risk, incidents, resilience monitoring,
+            and audit-ready registers into one clear AI-powered DORA workflow.
           </motion.p>
 
           <motion.div
@@ -286,18 +286,17 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.45, ease: EASE_OUT_EXPO }}
           >
             <Link href="/signup" className="w-full sm:w-auto">
-              <Button className="w-full h-14 px-10 text-[15px] bg-gradient-to-tr from-indigo-600 to-blue-500 hover:opacity-90 text-white font-bold transition-all duration-500 rounded-2xl shadow-[0_0_30px_rgba(79,70,229,0.3)] hover:shadow-[0_0_40px_rgba(79,70,229,0.5)] hover:-translate-y-1 active:scale-95">
-                Scale to Enterprise
-                <ArrowRight className="size-5 ml-3" />
+              <Button className="h-12 w-full rounded-xl bg-[#5B5BD6] px-7 text-[14px] font-semibold text-white shadow-[0_16px_36px_rgba(91,91,214,0.28)] hover:bg-[#4C4CCA]">
+                Start Free Trial
               </Button>
             </Link>
             <Link href="/dashboard" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="w-full h-14 px-10 text-[15px] border-slate-200 bg-white text-slate-800 font-bold transition-all duration-500 rounded-2xl hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-1 active:scale-95 shadow-sm"
+                className="h-12 w-full rounded-xl border-slate-200 bg-white px-7 text-[14px] font-semibold text-slate-800 shadow-sm"
               >
-                Launch Platform
-                <Zap className="size-5 ml-3 text-indigo-500" />
+                Open Platform
+                <ArrowRight className="ml-2 size-4" />
               </Button>
             </Link>
           </motion.div>
@@ -319,7 +318,7 @@ export default function LandingPage() {
         </motion.section>
 
         {/* Floating AI Orb Visual */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[600px] pointer-events-none opacity-20">
+        <div className="absolute top-1/2 left-1/2 size-[600px] -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-10">
            <div className="size-full rounded-full border border-white/5 animate-[pulse_8s_infinite]" />
            <div className="absolute inset-20 rounded-full border border-white/10 animate-[pulse_6s_infinite_reverse]" />
            <div className="absolute inset-40 rounded-full border border-white/20 animate-[pulse_4s_infinite]" />
@@ -328,105 +327,151 @@ export default function LandingPage() {
 
         {/* ── Product Preview (Mock Screenshot) ──────────────────── */}
         <motion.div
-          className="relative max-w-5xl mx-auto px-6 pb-20 -mt-10"
+          className="relative mx-auto -mt-2 max-w-6xl px-6 pb-20"
           initial={{ opacity: 0, y: 60, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="relative rounded-xl border border-[#E3E8EF] bg-white shadow-2xl shadow-[#0A2540]/[0.08] overflow-hidden">
+          <div className="relative overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-[0_35px_80px_rgba(15,23,42,0.14)]">
             {/* Fake browser chrome */}
-            <div className="h-10 border-b border-[#E3E8EF] bg-[#F6F9FC] flex items-center px-4 gap-2">
+            <div className="flex h-12 items-center gap-2 border-b border-[#E8ECF4] bg-[#FAFBFE] px-4">
               <div className="flex gap-1.5">
                 <div className="size-3 rounded-full bg-[#E3E8EF]" />
                 <div className="size-3 rounded-full bg-[#E3E8EF]" />
                 <div className="size-3 rounded-full bg-[#E3E8EF]" />
               </div>
               <div className="flex-1 mx-4">
-                <div className="h-6 rounded-md bg-white border border-[#E3E8EF] flex items-center px-3 max-w-sm mx-auto">
+                <div className="mx-auto flex h-7 max-w-md items-center rounded-full border border-[#E5E7EF] bg-white px-3">
                   <Lock className="size-3 text-emerald-500 mr-1.5" />
-                  <span className="text-[11px] text-muted-foreground">app.doraroi.com/extraction</span>
+                  <span className="text-[11px] text-muted-foreground">app.doraroi.com/dashboard</span>
                 </div>
               </div>
             </div>
 
             {/* Mock app content */}
-            <div className="flex h-[340px] md:h-[420px]">
+            <div className="flex h-[340px] md:h-[520px]">
               {/* Sidebar mock */}
-              <div className="hidden md:block w-48 border-r border-[#E3E8EF] p-3 bg-white">
+              <div className="hidden w-56 border-r border-[#E8ECF4] bg-[#FCFCFF] p-4 md:block">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="size-5 rounded bg-[#635BFF] flex items-center justify-center">
-                    <LayoutGrid className="size-3 text-white" strokeWidth={2.5} />
+                  <div className="flex size-8 items-center justify-center rounded-xl bg-[#5B5BD6] text-white">
+                    <LayoutGrid className="size-4" strokeWidth={2.5} />
                   </div>
-                  <span className="text-[11px] font-bold text-[#0A2540]">DORA·RoI</span>
+                  <div>
+                    <p className="text-[13px] font-bold text-[#111827]">FinCorp EU</p>
+                    <p className="text-[11px] text-[#8A94A6]">Enterprise workspace</p>
+                  </div>
                 </div>
-                {["Dashboard", "Contracts", "Extractions", "Register", "Analytics"].map((item, i) => (
+                {["ROI Dashboard", "Contracts", "Regulatory Feed", "Audit Timeline", "Third-Party Risk"].map((item, i) => (
                   <div
                     key={item}
                     className={cn(
-                      "h-7 rounded-md flex items-center px-2 mb-0.5",
-                      i === 2 ? "bg-[#635BFF]/8" : ""
+                      "mb-1 flex h-10 items-center rounded-xl px-3 text-[12px] font-medium",
+                      i === 0 ? "bg-[#EEF1FF] text-[#5B5BD6]" : "text-[#556070]"
                     )}
                   >
-                    <div className={cn("size-3 rounded-sm mr-2", i === 2 ? "bg-[#635BFF]/30" : "bg-[#E3E8EF]")} />
-                    <span className={cn("text-[11px]", i === 2 ? "text-[#635BFF] font-medium" : "text-muted-foreground")}>{item}</span>
+                    <div className={cn("mr-3 size-2.5 rounded-sm", i === 0 ? "bg-[#5B5BD6]" : "bg-[#D8DEEA]")} />
+                    <span>{item}</span>
                   </div>
                 ))}
+                <div className="mt-8 rounded-2xl bg-[linear-gradient(180deg,#5B5BD6_0%,#4B45C7_100%)] p-4 text-white">
+                  <p className="text-[12px] font-bold">AI Copilot</p>
+                  <p className="mt-1 text-[11px] leading-5 text-white/80">Ask about controls, risks, and audit posture.</p>
+                </div>
               </div>
 
               {/* PDF Viewer mock */}
-              <div className="flex-1 bg-[#F6F9FC] p-4 flex items-center justify-center">
-                <div className="w-full max-w-[280px] bg-white rounded-lg shadow-sm border border-[#E3E8EF] p-6" style={{ aspectRatio: "1 / 1.3" }}>
-                  <div className="h-3 w-32 bg-[#0A2540] rounded-sm mb-3" />
-                  <div className="h-2 w-24 bg-[#E3E8EF] rounded-sm mb-4" />
-                  <div className="space-y-1.5">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className={cn("h-1.5 rounded-sm", i % 4 === 0 ? "w-3/4 bg-[#0A2540]/15" : "bg-[#E3E8EF]", i === 2 && "w-4/5", i === 5 && "w-2/3")} />
-                    ))}
-                  </div>
-                  {/* Highlight overlays */}
-                  <div className="mt-3 space-y-2">
-                    <div className="h-4 rounded border-l-2 border-[#635BFF] bg-[#635BFF]/5 relative">
-                      <span className="absolute -top-3 left-0 text-[7px] font-bold text-[#635BFF] bg-[#635BFF]/10 px-1 rounded">Entity Name</span>
+              <div className="flex-1 bg-[#F8FAFF] p-5 md:p-6">
+                <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-[22px] border border-[#E5E9F4] bg-white p-5 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[22px] font-bold text-[#111827]">DORA Compliance ROI Dashboard</p>
+                        <p className="mt-1 text-[13px] text-[#7C879A]">Executive view across contracts, controls, and incidents</p>
+                      </div>
+                      <Badge className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-50">Live</Badge>
                     </div>
-                    <div className="h-1.5 bg-[#E3E8EF] rounded-sm w-5/6" />
-                    <div className="h-4 rounded border-l-2 border-emerald-400 bg-emerald-400/5 relative">
-                      <span className="absolute -top-3 left-0 text-[7px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">LEI Code</span>
+                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                      {[
+                        { label: "Compliance", value: "87%", tone: "bg-emerald-50 text-emerald-600" },
+                        { label: "Contracts", value: "242", tone: "bg-[#EEF1FF] text-[#5B5BD6]" },
+                        { label: "Open Risks", value: "23", tone: "bg-amber-50 text-amber-600" },
+                      ].map((card) => (
+                        <div key={card.label} className="rounded-2xl border border-[#E8ECF4] bg-[#FBFCFF] p-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[12px] font-semibold text-[#7C879A]">{card.label}</p>
+                            <div className={cn("rounded-xl px-2 py-1 text-[10px] font-bold", card.tone)}>Live</div>
+                          </div>
+                          <p className="mt-4 text-[28px] font-black tracking-[-0.05em] text-[#111827]">{card.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-5 rounded-[20px] bg-[linear-gradient(180deg,#F7F8FF_0%,#FFFFFF_100%)] p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[14px] font-semibold text-[#182033]">Regulatory Coverage Radar</p>
+                        <p className="text-[12px] text-[#5B5BD6]">Q4 2024</p>
+                      </div>
+                      <div className="mt-4 flex items-center justify-center">
+                        <div className="relative h-48 w-48 rounded-full border border-dashed border-[#C8D1E7]">
+                          <div className="absolute inset-6 rounded-full border border-dashed border-[#D7DEEF]" />
+                          <div className="absolute inset-12 rounded-full border border-dashed border-[#E5EAF5]" />
+                          <div className="absolute left-1/2 top-3 h-[calc(100%-24px)] w-px -translate-x-1/2 bg-[#E4EAF4]" />
+                          <div className="absolute left-3 top-1/2 h-px w-[calc(100%-24px)] -translate-y-1/2 bg-[#E4EAF4]" />
+                          <div className="absolute inset-[22%] rounded-[34%] bg-[#5B5BD6]/14 outline outline-2 outline-[#5B5BD6]" />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Form panel mock */}
-              <div className="w-64 md:w-80 border-l border-[#E3E8EF] bg-white p-4 overflow-hidden">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="size-6 rounded bg-[#635BFF]/10 flex items-center justify-center">
-                    <Bot className="size-3.5 text-[#635BFF]" />
-                  </div>
-                  <span className="text-[11px] font-semibold text-[#0A2540]">AI Extraction Review</span>
-                </div>
-                {/* Mock fields */}
-                {[
-                  { label: "Entity Name", value: "Amazon Web Services EMEA", conf: "98%", color: "text-emerald-600" },
-                  { label: "LEI Code", value: "635400KDMFMR...", conf: "72%", color: "text-amber-600" },
-                  { label: "Critical Function", value: "Cloud Storage", conf: "85%", color: "text-emerald-600" },
-                  { label: "Contract End", value: "2026-12-31", conf: "94%", color: "text-emerald-600" },
-                ].map((f) => (
-                  <div key={f.label} className="mb-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-semibold text-[#0A2540]">{f.label}</span>
-                      <span className={cn("text-[9px] font-bold", f.color)}>{f.conf}</span>
+                  <div className="space-y-4">
+                    <div className="rounded-[22px] border border-[#E5E9F4] bg-white p-5 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[15px] font-bold text-[#182033]">AI Regulatory Feed</p>
+                        <Badge className="rounded-full bg-[#EEF1FF] px-2.5 py-1 text-[10px] font-semibold text-[#5B5BD6] hover:bg-[#EEF1FF]">AI Powered</Badge>
+                      </div>
+                      <div className="mt-4 space-y-3">
+                        {[
+                          "New third-party contract obligations detected under Art. 28.",
+                          "Incident reporting workflow needs two missing control attestations.",
+                          "Audit-ready register updated after latest contract approval.",
+                        ].map((item, index) => (
+                          <div key={item} className="rounded-2xl border border-[#E8ECF4] bg-[#FBFCFF] p-4">
+                            <div className="flex items-center gap-2">
+                              <div className={cn("size-8 rounded-xl", index === 0 ? "bg-rose-50" : index === 1 ? "bg-amber-50" : "bg-[#EEF1FF]")} />
+                              <p className="text-[13px] font-semibold text-[#182033]">Priority update</p>
+                            </div>
+                            <p className="mt-3 text-[13px] leading-6 text-[#617086]">{item}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="h-7 rounded border border-[#E3E8EF] bg-[#F6F9FC] flex items-center px-2">
-                      <span className="text-[10px] text-[#0A2540] truncate">{f.value}</span>
+
+                    <div className="rounded-[22px] border border-[#E5E9F4] bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex items-center gap-2">
+                        <div className="flex size-8 items-center justify-center rounded-xl bg-[#EEF1FF]">
+                          <Bot className="size-4 text-[#5B5BD6]" />
+                        </div>
+                        <p className="text-[15px] font-bold text-[#182033]">AI Extraction Review</p>
+                      </div>
+                      {[
+                        { label: "Entity Name", value: "Amazon Web Services EMEA", conf: "98%", color: "text-emerald-600" },
+                        { label: "LEI Code", value: "635400KDMFMR...", conf: "72%", color: "text-amber-600" },
+                        { label: "Critical Function", value: "Cloud Storage", conf: "85%", color: "text-emerald-600" },
+                      ].map((f) => (
+                        <div key={f.label} className="mb-3">
+                          <div className="mb-1 flex items-center justify-between">
+                            <span className="text-[10px] font-semibold text-[#0A2540]">{f.label}</span>
+                            <span className={cn("text-[9px] font-bold", f.color)}>{f.conf}</span>
+                          </div>
+                          <div className="rounded-xl border border-[#E5E9F4] bg-[#F8FAFF] px-3 py-2 text-[12px] text-[#556070]">
+                            {f.value}
+                          </div>
+                        </div>
+                      ))}
+                      <div className="mt-4 flex gap-2">
+                        <div className="flex-1 rounded-xl bg-emerald-600 py-2 text-center text-[12px] font-semibold text-white">Approve</div>
+                        <div className="flex-1 rounded-xl border border-[#D6DCE8] bg-white py-2 text-center text-[12px] font-semibold text-[#111827]">Review</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-                <div className="flex gap-2 mt-4">
-                  <div className="flex-1 h-7 rounded bg-emerald-600 flex items-center justify-center">
-                    <span className="text-[10px] text-white font-medium">Approve</span>
-                  </div>
-                  <div className="flex-1 h-7 rounded border border-[#E3E8EF] flex items-center justify-center">
-                    <span className="text-[10px] text-muted-foreground font-medium">Reject</span>
                   </div>
                 </div>
               </div>
@@ -434,8 +479,8 @@ export default function LandingPage() {
           </div>
 
           {/* Floating glow behind the screenshot */}
-          <div className="absolute inset-0 -z-10 blur-[100px] opacity-40">
-            <div className="absolute inset-x-10 bottom-0 h-1/2 bg-gradient-to-t from-indigo-100 to-transparent rounded-full" />
+          <div className="absolute inset-0 -z-10 blur-[100px] opacity-50">
+            <div className="absolute inset-x-20 bottom-0 h-1/2 rounded-full bg-gradient-to-t from-indigo-100 to-transparent" />
           </div>
         </motion.div>
 

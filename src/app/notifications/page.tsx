@@ -1,7 +1,7 @@
 "use client";
 
 import { AppShell } from "@/components/app-shell";
-import { Bell, CheckCircle2, AlertCircle, Info, Loader2 } from "lucide-react";
+import { Bell, CheckCircle2, AlertCircle, Info } from "lucide-react";
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,30 @@ interface Notification {
   read: boolean;
   category: string;
   actionUrl?: string;
+}
+
+function NotificationSkeleton() {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index} className="flex gap-4 rounded-xl border border-[#E3E8EF] bg-white p-4">
+          <div className="skeleton h-10 w-10 rounded-lg" />
+          <div className="flex-1">
+            <div className="flex items-center justify-between gap-4">
+              <div className="skeleton h-4 w-48" />
+              <div className="skeleton h-3 w-16" />
+            </div>
+            <div className="skeleton mt-3 h-3 w-full" />
+            <div className="skeleton mt-2 h-3 w-3/4" />
+            <div className="mt-4 flex gap-3">
+              <div className="skeleton h-3 w-20" />
+              <div className="skeleton h-3 w-24" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function NotificationsPage() {
@@ -130,9 +154,7 @@ export default function NotificationsPage() {
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-3">
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="size-8 animate-spin text-[#635BFF]" />
-              </div>
+              <NotificationSkeleton />
             ) : filteredNotifications.length > 0 ? (
               filteredNotifications.map((notification) => (
                 <div 

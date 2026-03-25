@@ -5,7 +5,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 72px;
+  padding-top: 0;
   padding-left: 16px;
   padding-right: 16px;
 }
@@ -19,10 +19,13 @@
 }
 
 .cmd-content {
-  position: relative;
+  position: fixed;
+  top: clamp(88px, 12vh, 132px);
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1001;
-  width: 100%;
-  max-width: 640px;
+  width: min(760px, calc(100vw - 32px));
+  max-height: min(72vh, 720px);
   overflow: hidden;
   border-radius: 16px;
   background-color: rgba(255, 255, 255, 0.95);
@@ -40,6 +43,14 @@
   padding: 4px;
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 640px) {
+  .cmd-content {
+    top: 84px;
+    width: calc(100vw - 20px);
+    border-radius: 14px;
+  }
 }
 
 .cmd-group [cmdk-group-heading] {
